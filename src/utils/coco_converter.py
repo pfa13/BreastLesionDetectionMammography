@@ -21,13 +21,12 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
     for img_path in images:
         filename = os.path.basename(img_path)
 
-        # buscar metadata de esa imagen
+        # search metadata
         rows = df[df["image_name"] == filename]
 
         if len(rows) == 0:
             continue
 
-        # cargar imagen para tamaño
         img = cv2.imread(img_path)
         h, w = img.shape[:2]
 
