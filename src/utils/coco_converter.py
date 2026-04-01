@@ -1,17 +1,23 @@
 import os
 import json
 import pandas as pd
-import cv2
+from PIL import Image
+from file_utils import read_image
 
 def convert_dmid_to_coco(images, metadata_path, output_json):
-    df = pd.read_excel(metadata_path)  # o read_csv si es csv
+    df = pd.read_excel(metadata_path, header=None)
+
+    df.columns = [
+        "image_id", "view", "tissue", "abnormality",
+        "class", "x", "y", "radius"
+    ]
 
     coco = {
         "images": [],
         "annotations": [],
         "categories": [
-            {"id": 1, "name": "mass"},
-            {"id": 2, "name": "calcification"}
+            {"id": 1, "name": "mass", "supercategory": "lesion"},
+            {"id": 2, "name": "calcification", "supercategory": "lesion"}
         ]
     }
 
@@ -19,38 +25,50 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
     img_id = 0
 
     for img_path in images:
-        filename = os.path.basename(img_path)
+        filename = os.path.splitext(os.path.basename(img_path))[0]
 
-        # search metadata
-        rows = df[df["image_name"] == filename]
+        rows = df[df["image_id"] == filename]
 
         if len(rows) == 0:
             continue
 
-        img = cv2.imread(img_path)
+        img = read_image(img_path)
+        if img is None:
+            continue
+
         h, w = img.shape[:2]
 
         coco["images"].append({
             "id": img_id,
-            "file_name": filename,
+            "file_name": img_path,
             "width": w,
             "height": h
         })
 
         for _, row in rows.iterrows():
-            x = row["center_x"]
-            y = row["center_y"]
-            r = row["radius"]
+            if row["abnormality"] == "NORM":
+                continue
 
-            x_min = x - r
-            y_min = y - r
-            width = 2 * r
-            height = 2 * r
+            try:
+                x = float(row["x"])
+                y = float(row["y"])
+                r = float(row["radius"])
+            except (ValueError, TypeError):
+                continue
 
-            # categoría (adaptar según dataset)
-            label = row.get("label", "mass")
+            # Bounding box
+            x_min = max(0, x - r)
+            y_min = max(0, y - r)
+            width = min(2 * r, w - x_min)
+            height = min(2 * r, h - y_min)
 
-            category_id = 1 if label == "mass" else 2
+            # Clasificación simple
+            abnormality = str(row["abnormality"])
+
+            if "CALC" in abnormality:
+                category_id = 2
+            else:
+                category_id = 1
 
             coco["annotations"].append({
                 "id": ann_id,

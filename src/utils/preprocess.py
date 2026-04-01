@@ -1,10 +1,10 @@
 import argparse
 from pathlib import Path
 
-from utils.extract import extract_zip
-from utils.split import create_splits, save_splits
-from utils.coco_converter import convert_dmid_to_coco
-from utils.file_utils import collect_images
+from extract import extract_zip
+from split import create_kfold_splits, save_kfold_splits
+from coco_converter import convert_dmid_to_coco
+from file_utils import collect_images
 
 
 def main():
@@ -12,9 +12,11 @@ def main():
     parser.add_argument("--input", type=str, required=True, help="Ruta al .zip")
     args = parser.parse_args()
 
-    raw_dir = "data/raw"
-    splits_dir = "data/splits"
-    annotations_dir = "data/annotations"
+    raw_dir = Path("../../data/raw")
+    splits_dir = Path("../../data/splits")
+    annotations_dir = Path("../../data/annotations")
+
+    annotations_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Extract
     extract_zip(args.input, raw_dir)
@@ -23,23 +25,35 @@ def main():
     images = collect_images(raw_dir)
     print(f"[INFO] {len(images)} imágenes encontradas")
 
-    # 3. Split
-    train, val, test = create_splits(images)
+    # 3. Split (K-Fold)
+    folds = create_kfold_splits(images, k=10)
+    save_kfold_splits(folds, splits_dir)
 
-    splits = {
-        "train": train,
-        "val": val,
-        "test": test
-    }
+    # 4. COCO annotations por fold
+    metadata_path = raw_dir / "Metadata.xlsx"
 
-    save_splits(splits, splits_dir)
+    for fold in folds:        
+        fold_id = fold["fold"]
+        print(f"[OK] Fold {fold_id} annotations initiated")
+        train_images = fold["train"]
+        val_images = fold["val"]
 
-    # 4. COCO
-    metadata_path = "data/raw/Metadata.xlsx"
+        fold_ann_dir = annotations_dir / f"fold_{fold_id}"
+        fold_ann_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[OK] Fold {fold_id} coco initiated")
+        convert_dmid_to_coco(
+            train_images,
+            metadata_path,
+            fold_ann_dir / "train.json"
+        )
 
-    convert_dmid_to_coco(train, metadata_path, "data/annotations/train.json")
-    convert_dmid_to_coco(val, metadata_path, "data/annotations/val.json")
-    convert_dmid_to_coco(test, metadata_path, "data/annotations/test.json")
+        convert_dmid_to_coco(
+            val_images,
+            metadata_path,
+            fold_ann_dir / "val.json"
+        )
+
+        print(f"[OK] Fold {fold_id} annotations created")
 
 
 if __name__ == "__main__":

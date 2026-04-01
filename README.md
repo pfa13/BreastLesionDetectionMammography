@@ -19,10 +19,10 @@ pip install -r requirements.txt
 
 ## Preprocessing
 
-Run from the project root:
+Run from the utils folder:
 
 ```bash
-python -m src.utils.preprocess --input "PATH/TO/DATASET.zip"
+python -m preprocess --input "PATH/TO/DATASET.zip"
 ```
 
 This will:

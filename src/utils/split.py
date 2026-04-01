@@ -1,29 +1,39 @@
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from pathlib import Path
 
-def create_splits(images, train_ratio=0.7, val_ratio=0.15):
-    train, temp = train_test_split(
-        images,
-        test_size=(1 - train_ratio),
-        random_state=42
-    )
+def create_kfold_splits(images, k=10):
+    kf = KFold(n_splits=k, shuffle=True, random_state=42)
 
-    val, test = train_test_split(
-        temp,
-        test_size=0.5,
-        random_state=42
-    )
+    folds = []
 
-    return train, val, test
+    images = list(images)
 
+    for fold_idx, (train_idx, val_idx) in enumerate(kf.split(images)):
+        train = [images[i] for i in train_idx]
+        val = [images[i] for i in val_idx]
 
-def save_splits(splits, output_dir):
+        folds.append({
+            "fold": fold_idx,
+            "train": train,
+            "val": val
+        })
+
+    return folds
+
+def save_kfold_splits(folds, output_dir):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for name, files in splits.items():
-        with open(output_dir / f"{name}.txt", "w") as f:
-            for path in files:
+    for fold in folds:
+        fold_dir = output_dir / f"fold_{fold['fold']}"
+        fold_dir.mkdir(exist_ok=True)
+
+        with open(fold_dir / "train.txt", "w") as f:
+            for path in fold["train"]:
                 f.write(path + "\n")
 
-    print("[OK] Splits saved")
+        with open(fold_dir / "val.txt", "w") as f:
+            for path in fold["val"]:
+                f.write(path + "\n")
+
+    print("[OK] K-Fold splits saved")
