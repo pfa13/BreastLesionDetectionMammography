@@ -4,6 +4,29 @@ from PIL import Image
 import pydicom
 import numpy as np
 
+def read_image_size(img_path):
+    ext = img_path.lower().split('.')[-1]
+
+    # --- DICOM (MUY IMPORTANTE) ---
+    if ext == "dcm":
+        try:
+            dicom = pydicom.dcmread(img_path, stop_before_pixels=True)
+            h = int(dicom.Rows)
+            w = int(dicom.Columns)
+            return h, w
+        except Exception as e:
+            print(f"[WARNING] Error leyendo tamaño DICOM {img_path}: {e}")
+            return None
+
+    # --- IMÁGENES normales (rápido con PIL) ---
+    try:
+        with Image.open(img_path) as img:
+            w, h = img.size
+            return h, w
+    except Exception as e:
+        print(f"[WARNING] No se pudo leer tamaño de {img_path}: {e}")
+        return None
+
 def read_image(img_path):
     ext = img_path.lower().split('.')[-1]
 
@@ -13,13 +36,13 @@ def read_image(img_path):
             dicom = pydicom.dcmread(img_path)
             img = dicom.pixel_array.astype(np.float32)
 
-            # Normalización (CLAVE en imagen médica)
+            # Normalization
             img = (img - img.min()) / (img.max() - img.min() + 1e-8)
 
-            # Convertir a 8 bits
+            # Convert to 8 bits
             img = (img * 255).astype(np.uint8)
 
-            # Convertir a 3 canales (modelos lo esperan)
+            # Convert to 3 chanels
             img = np.stack([img]*3, axis=-1)
 
             return img
@@ -40,9 +63,6 @@ def read_image(img_path):
     except:
         print(f"[WARNING] No se pudo leer {img_path}")
         return None
-
-def collect_images(root_dir, extensions={".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".dcm"}):
-    from pathlib import Path
 
 def collect_images(root_dir, extensions={".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".dcm"}):
     root_dir = Path(root_dir)
@@ -70,5 +90,4 @@ def collect_images(root_dir, extensions={".png", ".jpg", ".jpeg", ".bmp", ".tif"
 
         images.append(str(path))
 
-    print(f"[INFO] {len(images)} imágenes válidas encontradas en {root_dir}")
     return images

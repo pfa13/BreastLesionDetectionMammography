@@ -2,58 +2,48 @@ import argparse
 from pathlib import Path
 
 from extract import extract_zip
-from split import create_kfold_splits, save_kfold_splits
-from coco_converter import convert_dmid_to_coco
 from file_utils import collect_images
-
+from coco_converter import convert_dmid_to_coco
+from coco_kfold import create_coco_kfold, save_coco_folds
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=str, required=True, help="Ruta al .zip")
     args = parser.parse_args()
 
+    # Rutas
     raw_dir = Path("../../data/raw")
-    splits_dir = Path("../../data/splits")
     annotations_dir = Path("../../data/annotations")
 
     annotations_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Extract
+    # Extract dataset (include nested zips)
     extract_zip(args.input, raw_dir)
 
-    # 2. Search images
+    # Collect valid images (TIFF + DICOM, without masks)
     images = collect_images(raw_dir)
-    print(f"[INFO] {len(images)} imágenes encontradas")
+    print(f"[INFO] {len(images)} imágenes válidas encontradas")
 
-    # 3. Split (K-Fold)
-    folds = create_kfold_splits(images, k=10)
-    save_kfold_splits(folds, splits_dir)
-
-    # 4. COCO annotations por fold
+    # Convert a COCO
     metadata_path = raw_dir / "Metadata.xlsx"
 
-    for fold in folds:        
-        fold_id = fold["fold"]
-        print(f"[OK] Fold {fold_id} annotations initiated")
-        train_images = fold["train"]
-        val_images = fold["val"]
+    full_coco_path = annotations_dir / "full.json"
 
-        fold_ann_dir = annotations_dir / f"fold_{fold_id}"
-        fold_ann_dir.mkdir(parents=True, exist_ok=True)
-        print(f"[OK] Fold {fold_id} coco initiated")
-        convert_dmid_to_coco(
-            train_images,
-            metadata_path,
-            fold_ann_dir / "train.json"
-        )
+    convert_dmid_to_coco(
+        images,
+        metadata_path,
+        full_coco_path
+    )
 
-        convert_dmid_to_coco(
-            val_images,
-            metadata_path,
-            fold_ann_dir / "val.json"
-        )
+    print("[OK] COCO generated")
 
-        print(f"[OK] Fold {fold_id} annotations created")
+    # Create K-Fold
+    folds = create_coco_kfold(full_coco_path, k=10)
+
+    # Save folds
+    save_coco_folds(folds, annotations_dir)
+
+    print("[OK] Pipeline finished")
 
 
 if __name__ == "__main__":

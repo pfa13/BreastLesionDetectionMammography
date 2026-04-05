@@ -1,8 +1,9 @@
 import os
 import json
 import pandas as pd
-from PIL import Image
-from file_utils import read_image
+
+from file_utils import read_image_size
+
 
 def convert_dmid_to_coco(images, metadata_path, output_json):
     df = pd.read_excel(metadata_path, header=None)
@@ -12,12 +13,14 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
         "class", "x", "y", "radius"
     ]
 
+    grouped = df.groupby("image_id")
+
     coco = {
         "images": [],
         "annotations": [],
         "categories": [
-            {"id": 1, "name": "mass", "supercategory": "lesion"},
-            {"id": 2, "name": "calcification", "supercategory": "lesion"}
+            {"id": 1, "name": "mass"},
+            {"id": 2, "name": "calcification"}
         ]
     }
 
@@ -27,43 +30,44 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
     for img_path in images:
         filename = os.path.splitext(os.path.basename(img_path))[0]
 
-        rows = df[df["image_id"] == filename]
-
-        if len(rows) == 0:
+        if filename not in grouped.groups:
             continue
 
-        img = read_image(img_path)
-        if img is None:
+        rows = grouped.get_group(filename)
+
+        size = read_image_size(img_path)
+        if size is None:
             continue
 
-        h, w = img.shape[:2]
+        h, w = size
 
         coco["images"].append({
             "id": img_id,
-            "file_name": img_path,
+            "file_name": os.path.basename(img_path),
             "width": w,
             "height": h
         })
 
         for _, row in rows.iterrows():
-            if row["abnormality"] == "NORM":
+
+            if pd.isna(row["x"]) or pd.isna(row["y"]) or pd.isna(row["radius"]):
                 continue
 
             try:
                 x = float(row["x"])
                 y = float(row["y"])
                 r = float(row["radius"])
-            except (ValueError, TypeError):
+            except:
                 continue
 
-            # Bounding box
-            x_min = max(0, x - r)
-            y_min = max(0, y - r)
-            width = min(2 * r, w - x_min)
-            height = min(2 * r, h - y_min)
+            # bounding box
+            x_min = x - r
+            y_min = y - r
+            width = 2 * r
+            height = 2 * r
 
-            # Clasificación simple
-            abnormality = str(row["abnormality"])
+            # category
+            abnormality = str(row["abnormality"]).upper()
 
             if "CALC" in abnormality:
                 category_id = 2
@@ -86,4 +90,4 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
     with open(output_json, "w") as f:
         json.dump(coco, f)
 
-    print(f"[OK] COCO saved in {output_json}")
+    print(f"[OK] COCO guardado en {output_json}")
