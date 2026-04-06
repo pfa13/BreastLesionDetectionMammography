@@ -1,10 +1,10 @@
 import argparse
 from pathlib import Path
 
-from extract import extract_zip
-from file_utils import collect_images
-from coco_converter import convert_dmid_to_coco
-from coco_kfold import create_coco_kfold, save_coco_folds
+from src.utils.extract import extract_zip
+from src.utils.file_utils import collect_images
+from src.utils.coco_converter import convert_dmid_to_coco
+from src.utils.coco_kfold import create_coco_kfold, save_coco_folds
 
 def main():
     parser = argparse.ArgumentParser()
@@ -12,8 +12,8 @@ def main():
     args = parser.parse_args()
 
     # Rutas
-    raw_dir = Path("../../data/raw")
-    annotations_dir = Path("../../data/annotations")
+    raw_dir = Path("./data/raw")
+    annotations_dir = Path("./data/annotations")
 
     annotations_dir.mkdir(parents=True, exist_ok=True)
 

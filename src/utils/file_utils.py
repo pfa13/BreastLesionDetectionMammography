@@ -91,3 +91,41 @@ def collect_images(root_dir, extensions={".png", ".jpg", ".jpeg", ".bmp", ".tif"
         images.append(str(path))
 
     return images
+
+def load_image(img_path):
+    if img_path.lower().endswith(".dcm"):
+        try:
+            dicom = pydicom.dcmread(img_path)
+            img = dicom.pixel_array
+
+            if len(img.shape) > 2:
+                img = img.squeeze()
+
+            if img.ndim == 2:
+                pass
+            else:
+                # fallback si sigue raro
+                print(f"[WARNING] Weird form in {img_path}: {img.shape}")
+                img = img[..., 0] if img.ndim > 2 else img
+
+            img = img.astype(np.float32)
+
+            # normalizar
+            img = (img - img.min()) / (img.max() - img.min() + 1e-6)
+            img = (img * 255).astype(np.uint8)
+
+            # 3 canales
+            img = np.stack([img] * 3, axis=-1)
+
+            return Image.fromarray(img)
+
+        except Exception as e:
+            print(f"[WARNING] Error reading DICOM {img_path}: {e}")
+            return None
+
+    else:
+        try:
+            return Image.open(img_path).convert("RGB")
+        except Exception as e:
+            print(f"[WARNING] Error reading image {img_path}: {e}")
+            return None

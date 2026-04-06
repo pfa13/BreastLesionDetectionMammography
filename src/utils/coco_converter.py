@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 
-from file_utils import read_image_size
+from src.utils.file_utils import read_image_size
 
 
 def convert_dmid_to_coco(images, metadata_path, output_json):
@@ -43,7 +43,7 @@ def convert_dmid_to_coco(images, metadata_path, output_json):
 
         coco["images"].append({
             "id": img_id,
-            "file_name": os.path.basename(img_path),
+            "file_name": img_path,
             "width": w,
             "height": h
         })
