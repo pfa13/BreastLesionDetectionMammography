@@ -8,31 +8,19 @@ def extract_zip(input_path, output_dir):
     with zipfile.ZipFile(input_path, 'r') as zip_ref:
         zip_ref.extractall(output_dir)
 
-    print(f"[OK] Main zip extracted in {output_dir}")
+    seen = set()
 
-    extract_nested_zips(output_dir)
+    while True:
+        zips = [z for z in output_dir.rglob("*.zip") if z not in seen]
 
-def extract_nested_zips(root_dir):
-    root_dir = Path(root_dir)
+        if not zips:
+            break
 
-    zip_files = list(root_dir.rglob("*.zip"))
-
-    while zip_files:
-        zip_path = zip_files.pop()
-
-        print(f"[INFO] Extracting nested zip: {zip_path}")
-
-        extract_path = zip_path.parent
-
-        try:
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(extract_path)
-        except zipfile.BadZipFile:
-            print(f"[WARNING] Failed to extract {zip_path}")
-            continue
-
-        zip_path.unlink()
-
-        zip_files = list(root_dir.rglob("*.zip"))
+        for z in zips:
+            print(f"[INFO] Extracting nested zip: {z}")
+            with zipfile.ZipFile(z, 'r') as zip_ref:
+                zip_ref.extractall(z.parent)
+            seen.add(z)
+            z.unlink()
 
     print("[OK] All nested zips extracted")

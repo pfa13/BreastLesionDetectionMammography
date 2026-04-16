@@ -1,131 +1,88 @@
 from pathlib import Path
-import cv2
 from PIL import Image
-import pydicom
 import numpy as np
+import pydicom
+import tifffile
 
-def read_image_size(img_path):
-    ext = img_path.lower().split('.')[-1]
+IMG_EXTS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".dcm"}
 
-    # --- DICOM (MUY IMPORTANTE) ---
-    if ext == "dcm":
-        try:
-            dicom = pydicom.dcmread(img_path, stop_before_pixels=True)
-            h = int(dicom.Rows)
-            w = int(dicom.Columns)
-            return h, w
-        except Exception as e:
-            print(f"[WARNING] Error leyendo tamaño DICOM {img_path}: {e}")
-            return None
 
-    # --- IMÁGENES normales (rápido con PIL) ---
-    try:
-        with Image.open(img_path) as img:
-            w, h = img.size
-            return h, w
-    except Exception as e:
-        print(f"[WARNING] No se pudo leer tamaño de {img_path}: {e}")
-        return None
-
-def read_image(img_path):
-    ext = img_path.lower().split('.')[-1]
-
-    # --- DICOM ---
-    if ext == "dcm":
-        try:
-            dicom = pydicom.dcmread(img_path)
-            img = dicom.pixel_array.astype(np.float32)
-
-            # Normalization
-            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
-
-            # Convert to 8 bits
-            img = (img * 255).astype(np.uint8)
-
-            # Convert to 3 chanels
-            img = np.stack([img]*3, axis=-1)
-
-            return img
-
-        except Exception as e:
-            print(f"[WARNING] Error leyendo DICOM {img_path}: {e}")
-            return None
-
-    # --- OpenCV ---
-    img = cv2.imread(img_path)
-    if img is not None:
-        return img
-
-    # --- PIL fallback ---
-    try:
-        img = Image.open(img_path).convert("RGB")
-        return np.array(img)
-    except:
-        print(f"[WARNING] No se pudo leer {img_path}")
-        return None
-
-def collect_images(root_dir, extensions={".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".dcm"}):
+def collect_images(root_dir):
     root_dir = Path(root_dir)
-
     images = []
 
-    for path in root_dir.rglob("*"):
-        if not path.is_file():
-            continue
-
-        if path.suffix.lower() not in extensions:
-            continue
-
-        path_str = str(path).lower()
-
-        # excluir carpetas no válidas
-        if "roi masks" in path_str:
-            continue
-        if "mask" in path_str:
-            continue
-        if "annotation" in path_str:
-            continue
-        if "pixel-level" in path_str:
-            continue
-
-        images.append(str(path))
+    for p in root_dir.rglob("*"):
+        if p.suffix.lower() in IMG_EXTS and p.is_file():
+            images.append(str(p.resolve()))  # 🔥 ruta absoluta
 
     return images
 
-def load_image(img_path):
-    if img_path.lower().endswith(".dcm"):
-        try:
-            dicom = pydicom.dcmread(img_path)
-            img = dicom.pixel_array
 
-            if len(img.shape) > 2:
+def read_image_size(img_path):
+    ext = Path(img_path).suffix.lower()
+
+    if ext == ".dcm":
+        try:
+            dicom = pydicom.dcmread(img_path, stop_before_pixels=True)
+            return int(dicom.Rows), int(dicom.Columns)
+        except:
+            return None
+
+    try:
+        with Image.open(img_path) as img:
+            return img.height, img.width
+    except:
+        return None
+
+
+def read_image(img_path):
+    ext = Path(img_path).suffix.lower()
+
+    if ext == ".dcm":
+        try:
+            dcm = pydicom.dcmread(img_path)
+            img = dcm.pixel_array.astype(np.float32)
+
+            if img.ndim > 2:
                 img = img.squeeze()
 
-            if img.ndim == 2:
-                pass
-            else:
-                # fallback si sigue raro
-                print(f"[WARNING] Weird form in {img_path}: {img.shape}")
-                img = img[..., 0] if img.ndim > 2 else img
+            p1, p99 = np.percentile(img, (1, 99))
+            img = np.clip(img, p1, p99)
+
+            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
+            img = (img * 255).astype(np.uint8)
+
+            return np.stack([img]*3, axis=-1)
+
+        except Exception as e:
+            print(f"[WARNING] DICOM error {img_path}: {e}")
+            return None
+
+    if ext in [".tif", ".tiff"]:
+        try:
+            img = tifffile.imread(img_path)
+
+            if img.ndim > 2:
+                img = img.squeeze()
 
             img = img.astype(np.float32)
 
-            # normalizar
-            img = (img - img.min()) / (img.max() - img.min() + 1e-6)
+            p1, p99 = np.percentile(img, (1, 99))
+            img = np.clip(img, p1, p99)
+
+            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
             img = (img * 255).astype(np.uint8)
 
-            # 3 canales
-            img = np.stack([img] * 3, axis=-1)
-
-            return Image.fromarray(img)
+            return np.stack([img]*3, axis=-1)
 
         except Exception as e:
-            print(f"[WARNING] Error reading DICOM {img_path}: {e}")
+            print(f"[WARNING] TIFF error {img_path}: {e}")
             return None
 
-    else:
-        try:
-            return Image.open(img_path).convert("RGB")
-        except Exception as e:
-            print(f"[WARNING] Error reading image {img_path}: {e}")
-            return None
+    try:
+        img = Image.open(img_path).convert("L")
+        img = np.array(img)
+        return np.stack([img]*3, axis=-1)
+    except Exception as e:
+        print(f"[WARNING] Error leyendo {img_path}: {e}")
+        return None

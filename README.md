@@ -7,22 +7,12 @@ https://figshare.com/articles/dataset/_b_Digital_mammography_Dataset_for_Breast_
 
 ---
 
-## Installation
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-```
-
----
-
 ## Preprocessing
 
 Run from the utils folder:
 
 ```bash
-python -m preprocess --input "PATH/TO/DATASET.zip"
+python -m src.utils.preprocess --input "PATH/TO/DATASET.zip"
 ```
 
 This will:
@@ -48,3 +38,13 @@ data/
 
 * Dataset is not tracked in git (`.gitignore`)
 * Annotations are converted to COCO format from center + radius
+
+---
+
+## Execution
+
+Run from the training folder:
+
+```bash
+python -m src.train --model faster/yolo/retina
+```

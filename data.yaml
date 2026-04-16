@@ -1,0 +1,8 @@
+path: data/yolo/fold_0
+
+train: train/images
+val: val/images
+
+names:
+  0: mass
+  1: calcification
