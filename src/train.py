@@ -78,6 +78,7 @@ def train_fasterrcnn():
             total_loss += loss.item()
 
         print(f"[FAST FasterRCNN] Epoch {epoch} Loss: {total_loss:.4f}")
+    torch.save(model.state_dict(), "faster.pth")
 
 def train_retinanet():
     train_dataset = CocoDataset(
@@ -128,6 +129,7 @@ def train_retinanet():
 
         print(f"[RetinaNet] Epoch {epoch}")
         print(f"  Train Loss: {train_loss / len(train_loader):.4f}")
+    torch.save(model.state_dict(), "retina.pth")
 
 
 def main(model_name):
