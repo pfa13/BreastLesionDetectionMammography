@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 import numpy as np
+from ultralytics import YOLO
 
 from src.dataset import CocoDataset
 from src.config import *
@@ -27,8 +28,6 @@ def evaluate_model(model, loader, device):
     return np.mean(losses)
 
 def evaluate_yolo(model_path):
-    from ultralytics import YOLO
-
     model = YOLO(model_path)
 
     results = model.val(data="data.yaml")
@@ -60,23 +59,29 @@ def run_full_evaluation():
 
     print("\n=== EVALUACIÓN MODELOS ===\n")
 
-    # 🔹 Faster R-CNN
+    # Faster R-CNN
     from src.models.fasterrcnn import get_model as get_faster
 
-    faster = get_faster(NUM_CLASSES).to(device)
+    faster = get_faster(NUM_CLASSES)
+    faster.load_state_dict(torch.load("faster.pth", map_location=device))
+    faster.to(device)
+
     faster_score = evaluate_model(faster, val_loader, device)
 
     print(f"Faster R-CNN Loss: {faster_score:.4f}")
 
-    # 🔹 RetinaNet
+    # RetinaNet
     from src.models.retinanet import get_model as get_retina
 
-    retina = get_retina(NUM_CLASSES).to(device)
+    retina = get_retina(NUM_CLASSES)
+    retina.load_state_dict(torch.load("retina.pth", map_location=device))
+    retina.to(device)
+
     retina_score = evaluate_model(retina, val_loader, device)
 
     print(f"RetinaNet Loss: {retina_score:.4f}")
 
-    # 🔹 YOLO
+    # YOLO
     yolo_score = evaluate_yolo("runs/detect/train/weights/best.pt")
 
     print(f"YOLO mAP50: {yolo_score['map50']:.4f}")
