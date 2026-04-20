@@ -35,7 +35,7 @@
 
 \addbibresource{assets/bib-template.bib} % Adds the bibliography file.
 
-\title{Breast Lesion Detection (DMID)}        % Sets the document title.
+\title{Breast Lesion Detection in Mammography using Deep Learning}        % Sets the document title.
 \makeatletter
 \providecommand{\subtitle}[1]{%     % Custom command to add a subtitle.
   \apptocmd{\@title}{\par {\large #1 \par}}{}{}
@@ -54,10 +54,172 @@ Supervisor(s): Prof. Jorge Azorín López} % Sets the supervisor of the paper / 
 \begin{document}
 \pagenumbering{gobble} % Stops counting the pages from this point until changed again.
 \maketitle
-
 \begin{abstract}
+  Breast cancer detection in mammography is a challenging task due to the small size and low contrast of lesions such as masses and calcifications. In this project, we evaluate different object detection models, including YOLOv8, Faster R-CNN, and RetinaNet, for automated lesion detection.
+
+The dataset is preprocessed and converted into standard formats, and the models are fine-tuned on annotated mammographic images. The aim is to compare the performance of different detection paradigms and identify the most suitable approach for this medical imaging task.
 \end{abstract}
+\begin{center}
+    \vfill
+    \begin{figure}
+        \centering
+        \begin{subfigure}{.3\textwidth}
+          \centering
+          \includegraphics[width=.8\linewidth]{./assets/ua.png}
+        \end{subfigure}%
+        \begin{subfigure}{.3\textwidth}
+          \centering
+          \includegraphics[width=.8\linewidth]{./assets/eps.png}
+        \end{subfigure}
+        \end{figure}
+        \setcounter{figure}{0}
+        
+    University of Alicante
+\end{center}
+\newpage
+\renewcommand*\contentsname{Table of Contents} % This controls the title of your table of contents.
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{5} % Sets the maximum sublevel to be displayed within the table of contents.
+\tableofcontents
+}
+\newpage
+\pagenumbering{arabic}\setstretch{1.5}
 
 \section{Introduction}
+Breast cancer is a major global health concern, accounting for a significant proportion of cancer-related deaths among women. Early detection is crucial for improving patient outcomes, and mammography is the standard imaging technique used in screening programs. Despite its effectiveness, interpreting mammograms remains a complex and time-consuming task, even for experienced radiologists.
+
+One of the main challenges in mammography analysis is the detection of subtle abnormalities such as masses and calcifications. These lesions are often small, exhibit low contrast with surrounding tissue, and may appear differently depending on breast density. Additionally, dense breast tissue can obscure lesions, making detection even more difficult.
+
+In recent years, deep learning methods—particularly convolutional neural networks—have shown remarkable performance in computer vision tasks, including object detection. These methods have the potential to assist radiologists by providing automated and consistent detection of suspicious regions.
+
+In this project, we explore the application of state-of-the-art object detection models to the problem of breast lesion detection in mammography. We focus on comparing different detection paradigms, including one-stage and two-stage approaches, and adapting them to the specific constraints of medical imaging data.
+
+\section{Related work}
+Computer-aided detection (CAD) systems have long been used to assist radiologists in identifying suspicious regions in mammograms. Traditional approaches relied on handcrafted features and classical machine learning algorithms, which often struggled to generalize across datasets.
+
+With the advent of deep learning, convolutional neural networks (CNNs) have significantly improved performance in medical image analysis. In particular, object detection frameworks have been increasingly applied to mammography for identifying lesions.
+
+Object detection models can be broadly categorized into:
+\begin{itemize}
+  \item Two-stage detectors, such as Faster R-CNN, which first generate region proposals and then classify them. These models tend to achieve high accuracy but at the cost of computational complexity.
+  \item One-stage detectors, such as YOLO and RetinaNet, which perform detection in a single pass. These models are typically faster and more suitable for real-time applications.
+  \item Transformer-based detectors, such as DETR, which reformulate object detection as a direct set prediction problem. Although promising, they often require large datasets and computational resources.
+\end{itemize}
+
+In the context of mammography, challenges such as small object size and class imbalance make model selection and adaptation particularly important.
+
+\section{Dataset Description}
+In this study, we use the Digital Mammography Dataset for Breast Cancer Diagnosis (DMID), which contains mammographic images along with lesion annotations.
+
+The dataset includes images in multiple formats, primarily:
+\begin{itemize}
+  \item DICOM (medical imaging standard)
+  \item TIFF (converted images)
+\end{itemize}
+
+Annotations are provided in the form of lesion coordinates and radii, which represent suspicious regions in the breast. These annotations are converted into bounding boxes to make them compatible with object detection models.
+
+Two types of lesions are considered:
+\begin{itemize}
+  \item Masses
+  \item Calcifications
+\end{itemize}
+
+The dataset presents several challenges:
+\begin{itemize}
+  \item High resolution images, requiring resizing or tiling strategies
+  \item Small lesion size, especially for calcifications
+  \item Class imbalance, with fewer positive samples compared to background
+  \item Images without annotations, which must be handled carefully during training
+\end{itemize}
+
+These characteristics make the dataset representative of real-world clinical scenarios.
+
+\section{Data Preprocessing}
+A comprehensive preprocessing pipeline was implemented to prepare the dataset for training deep learning models.
+
+\subsection{Data extraction}
+The dataset was initially provided as compressed files, including nested ZIP archives. A custom extraction script was developed to recursively extract all files and organize them into a structured directory.
+
+\subsection{Image Processing}
+Given the presence of multiple formats, a unified image loading strategy was implemented:
+\begin{itemize}
+  \item DICOM images were read using specialized libraries and converted to standard image arrays
+  \item All images were normalized and converted to 3-channel RGB format to ensure compatibility with deep learning models
+  \item Images were resized to a fixed resolution (512×512) to balance computational efficiency and detail preservation
+\end{itemize}
+
+\subsection{Annotation Conversion (COCO Format)}
+\subsection{Data cleaning}
+To ensure training stability, several filtering steps were applied:
+\begin{itemize}
+  \item Removal of invalid bounding boxes (zero or negative area)
+  \item Filtering of extremely small boxes
+  \item Consistency checks between labels and bounding boxes
+\end{itemize}
+
+\subsection{Data Splitting}
+A K-Fold cross-validation strategy (K=10) was implemented to improve robustness and allow for fair model comparison. Each fold contains:
+\begin{itemize}
+  \item Training set
+  \item Validation set
+\end{itemize}
+
+This approach ensures that all samples are used for both training and validation across different iterations.
+
+\subsection{Conversion to YOLO Format}
+For training YOLO-based models, the dataset was additionally converted into YOLO format:
+\begin{itemize}
+  \item Images organized into train/val folders
+  \item Labels stored as text files with normalized bounding boxes
+\end{itemize}
+
+All images were explicitly converted to RGB to avoid channel mismatches during training.
+
+\section{Methodology}
+\subsection{Models Overview}
+Three object detection models from different paradigms were selected:
+
+\subsubsection{YOLOv8 (One-stage detector)}
+YOLOv8 performs detection in a single forward pass, making it highly efficient. It is well-suited for real-time applications and provides a good balance between speed and accuracy.
+
+\subsubsection{Faster R-CNN (Two-stage detector)}
+Faster R-CNN first generates region proposals using a Region Proposal Network (RPN) and then classifies them. It is generally more accurate but computationally slower.
+
+\subsubsection{RetinaNet (One-stage detector with Focal Loss)}
+RetinaNet addresses class imbalance using Focal Loss, which reduces the impact of easy negatives during training. This makes it particularly suitable for datasets with many background regions, such as mammography.
+
+\subsection{Training Setup}
+All models were trained using the following configuration:
+\begin{itemize}
+  \item Image resolution: 512 × 512
+  \item Batch size: limited due to hardware constraints
+  \item Optimizer: Adam / SGD (depending on model)
+  \item Pretrained weights: used for transfer learning
+  \item Training epochs: limited for experimentation
+\end{itemize}
+
+The experiments were conducted on a system equipped with GPU: NVIDIA GeForce MX330
+
+Due to hardware limitations, training time and model complexity were constrained, influencing the experimental design.
+
+\subsection{Data Handling Strategy}
+Special care was taken to handle dataset-specific challenges:
+\begin{itemize}
+  \item Images without annotations were included with empty targets
+  \item Bounding boxes were filtered to remove invalid entries
+  \item Class labels were mapped consistently across all models
+  \item All data was converted to tensor format compatible with PyTorch detection models
+\end{itemize}
+
+\section{Experiments and Evaluation}
+\subsection{Evaluation Metrics}
+\subsection{Experimental Setup}
+\subsection{Results}
+\section{Discussion}
+\section{Conclusion}
+\section{Future Work}
+\section{References}
 
 \end{document}
