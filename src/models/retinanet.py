@@ -1,16 +1,22 @@
 import torchvision
+from torchvision.models.detection import retinanet_resnet50_fpn
 
-def get_model():
-    model = torchvision.models.detection.retinanet_resnet50_fpn(weights="DEFAULT")
 
-    # 🔥 CLAVE REAL
-    num_classes = 3  # 2 clases + background
+def get_model(num_classes=3):
 
-    in_features = model.head.classification_head.num_classes
+    model = retinanet_resnet50_fpn(weights="DEFAULT")
 
-    model.head.classification_head = torchvision.models.detection.retinanet.RetinaNetClassificationHead(
+    # torchvision YA espera num_classes en training loop
+    # SOLO cambia predictor correctamente:
+
+    from torchvision.models.detection.retinanet import RetinaNetHead
+
+    num_classes = num_classes + 1  # background
+
+    # ✔ forma segura: reemplazar head completa
+    model.head = RetinaNetHead(
         in_channels=256,
-        num_anchors=9,
+        num_anchors=model.head.classification_head.num_anchors,
         num_classes=num_classes
     )
 

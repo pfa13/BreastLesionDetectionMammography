@@ -4,6 +4,7 @@ import numpy as np
 import pydicom
 import tifffile
 
+
 IMG_EXTS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".dcm"}
 
 
@@ -13,7 +14,7 @@ def collect_images(root_dir):
 
     for p in root_dir.rglob("*"):
         if p.suffix.lower() in IMG_EXTS and p.is_file():
-            images.append(str(p.resolve()))  # 🔥 ruta absoluta
+            images.append(str(p.resolve()))
 
     return images
 
@@ -35,9 +36,33 @@ def read_image_size(img_path):
         return None
 
 
+# 🔥 SAFE NORMALIZER (CRÍTICO)
+def safe_normalize(img):
+    img = img.astype(np.float32)
+
+    if np.isnan(img).any():
+        return None
+
+    if np.isinf(img).any():
+        return None
+
+    p1, p99 = np.percentile(img, (1, 99))
+    img = np.clip(img, p1, p99)
+
+    denom = img.max() - img.min()
+    if denom < 1e-6:
+        return None
+
+    img = (img - img.min()) / (denom + 1e-8)
+    img = (img * 255).astype(np.uint8)
+
+    return img
+
+
 def read_image(img_path):
     ext = Path(img_path).suffix.lower()
 
+    # ---------------- DICOM ----------------
     if ext == ".dcm":
         try:
             dcm = pydicom.dcmread(img_path)
@@ -46,18 +71,16 @@ def read_image(img_path):
             if img.ndim > 2:
                 img = img.squeeze()
 
-            p1, p99 = np.percentile(img, (1, 99))
-            img = np.clip(img, p1, p99)
+            img = safe_normalize(img)
+            if img is None:
+                return None
 
-            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
-            img = (img * 255).astype(np.uint8)
+            return np.stack([img] * 3, axis=-1)
 
-            return np.stack([img]*3, axis=-1)
-
-        except Exception as e:
-            print(f"[WARNING] DICOM error {img_path}: {e}")
+        except:
             return None
 
+    # ---------------- TIFF ----------------
     if ext in [".tif", ".tiff"]:
         try:
             img = tifffile.imread(img_path)
@@ -67,22 +90,25 @@ def read_image(img_path):
 
             img = img.astype(np.float32)
 
-            p1, p99 = np.percentile(img, (1, 99))
-            img = np.clip(img, p1, p99)
+            img = safe_normalize(img)
+            if img is None:
+                return None
 
-            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
-            img = (img * 255).astype(np.uint8)
+            return np.stack([img] * 3, axis=-1)
 
-            return np.stack([img]*3, axis=-1)
-
-        except Exception as e:
-            print(f"[WARNING] TIFF error {img_path}: {e}")
+        except:
             return None
 
+    # ---------------- RGB / GRAY ----------------
     try:
         img = Image.open(img_path).convert("L")
         img = np.array(img)
-        return np.stack([img]*3, axis=-1)
-    except Exception as e:
-        print(f"[WARNING] Error leyendo {img_path}: {e}")
+
+        img = safe_normalize(img)
+        if img is None:
+            return None
+
+        return np.stack([img] * 3, axis=-1)
+
+    except:
         return None

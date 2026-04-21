@@ -3,72 +3,60 @@ from torch.utils.data import DataLoader
 
 from src.dataset import CocoDataset
 from src.models.fasterrcnn import get_model as get_faster
-from src.models.yolo import train_yolo
 from src.models.retinanet import get_model as get_retinanet
+from src.models.yolo import train_yolo
 from src.config import *
+
 
 def collate_fn(batch):
     return tuple(zip(*batch))
 
-def evaluate(model, loader):
-    model.eval()
-    total_loss = 0
 
-    with torch.no_grad():
-        for images, targets in loader:
-            images = [img.to(DEVICE) for img in images]
-            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
-
-            loss_dict = model(images, targets)
-            loss = sum(loss_dict.values())
-
-            total_loss += loss.item()
-
-    return total_loss / len(loader)
-
+# -------------------------
+# FASTERCNN
+# -------------------------
 def train_fasterrcnn():
+
     train_dataset = CocoDataset(
         f"{ANNOTATIONS_DIR}/train.json",
         "data/raw/TIFF Images",
-        max_samples=300 
-    )
-
-    val_dataset = CocoDataset(
-        f"{ANNOTATIONS_DIR}/val.json",
-        "data/raw/TIFF Images",
-        max_samples=100
+        max_samples=300
     )
 
     train_loader = DataLoader(
         train_dataset,
         batch_size=1,
         shuffle=True,
-        num_workers=0,   # CPU FIX
+        num_workers=2,
         collate_fn=collate_fn
     )
 
-    model = get_faster(NUM_CLASSES)
-    model.to(DEVICE)
+    model = get_faster(NUM_CLASSES).to(DEVICE)
 
     optimizer = torch.optim.SGD(
         model.parameters(),
-        lr=0.0001,
+        lr=0.005,   # importante para Faster R-CNN
         momentum=0.9,
         weight_decay=0.0005
     )
 
-    print("Starting epochs")
+    print("\n=== Faster R-CNN TRAIN ===\n")
+
     for epoch in range(EPOCHS):
         model.train()
-
-        total_loss = 0
+        total_loss = 0.0
 
         for images, targets in train_loader:
-            images = list(img.to(DEVICE) for img in images)
+
+            images = [img.to(DEVICE) for img in images]
             targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
             loss_dict = model(images, targets)
-            loss = sum(loss_dict.values())
+            loss = sum(loss for loss in loss_dict.values())
+
+            if torch.isnan(loss):
+                print("NaN loss skipped")
+                continue
 
             optimizer.zero_grad()
             loss.backward()
@@ -77,62 +65,68 @@ def train_fasterrcnn():
 
             total_loss += loss.item()
 
-        print(f"[FAST FasterRCNN] Epoch {epoch} Loss: {total_loss:.4f}")
+        print(f"[Faster R-CNN] Epoch {epoch+1}/{EPOCHS} | Loss: {total_loss:.4f}")
+
     torch.save(model.state_dict(), "faster.pth")
 
-def train_retinanet():
-    train_dataset = CocoDataset(
-        ann_file=f"{ANNOTATIONS_DIR}/train.json",
-        img_root="data/raw/TIFF Images"
-    )
 
-    val_dataset = CocoDataset(
-        ann_file=f"{ANNOTATIONS_DIR}/val.json",
-        img_root="data/raw/TIFF Images"
+# -------------------------
+# RETINANET
+# -------------------------
+def train_retinanet():
+
+    train_dataset = CocoDataset(
+        f"{ANNOTATIONS_DIR}/train.json",
+        "data/raw/TIFF Images",
+        max_samples=300
     )
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=2,
         shuffle=True,
+        num_workers=2,
         collate_fn=collate_fn
     )
 
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=False,
-        collate_fn=collate_fn
-    )
-
-    model = get_retinanet()
-    model.to(DEVICE)
+    model = get_retinanet(NUM_CLASSES).to(DEVICE)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
+    print("\n=== RetinaNet TRAIN ===\n")
+
     for epoch in range(EPOCHS):
         model.train()
-        train_loss = 0
+        total_loss = 0.0
 
         for images, targets in train_loader:
+
             images = [img.to(DEVICE) for img in images]
             targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
             loss_dict = model(images, targets)
-            loss = sum(loss_dict.values())
+            loss = sum(loss for loss in loss_dict.values())
+
+            if torch.isnan(loss):
+                print("NaN loss skipped")
+                continue
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            train_loss += loss.item()
+            total_loss += loss.item()
 
-        print(f"[RetinaNet] Epoch {epoch}")
-        print(f"  Train Loss: {train_loss / len(train_loader):.4f}")
+        print(f"[RetinaNet] Epoch {epoch+1}/{EPOCHS} | Loss: {total_loss:.4f}")
+
     torch.save(model.state_dict(), "retina.pth")
 
 
+# -------------------------
+# MAIN
+# -------------------------
 def main(model_name):
+
     if model_name == "yolo":
         train_yolo()
 
@@ -143,7 +137,7 @@ def main(model_name):
         train_retinanet()
 
     else:
-        print("Modelo no válido")
+        print("Modelo no válido. Usa: yolo | faster | retina")
 
 
 if __name__ == "__main__":
@@ -153,5 +147,4 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, required=True)
 
     args = parser.parse_args()
-
     main(args.model)
