@@ -13,7 +13,7 @@ cache: false
 device: null
 workers: 8
 project: null
-name: train
+name: train2
 exist_ok: false
 pretrained: true
 optimizer: auto
@@ -107,4 +107,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: C:\Users\Paula\Documents\Máster\BreastLesionDetectionMammography\runs\detect\train
+save_dir: C:\Users\Paula\Documents\Máster\BreastLesionDetectionMammography\runs\detect\train2
