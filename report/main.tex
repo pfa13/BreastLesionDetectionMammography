@@ -118,13 +118,15 @@ The dataset includes images in multiple formats, primarily:
   \item TIFF (converted images)
 \end{itemize}
 
-Annotations are provided in the form of lesion coordinates and radii, which represent suspicious regions in the breast. These annotations are converted into bounding boxes to make them compatible with object detection models.
+Annotations are provided in the form of lesion coordinates and radii, which represent suspicious regions in the breast. These annotations are converted into bounding boxes by defining a rectangular region around each lesion to make them compatible with object detection models.
 
 Two types of lesions are considered:
 \begin{itemize}
   \item Masses
   \item Calcifications
 \end{itemize}
+
+Other labels present in the dataset, such as normal tissue were excluded, as they do not provide bounding box annotations.
 
 The dataset presents several challenges:
 \begin{itemize}
@@ -158,6 +160,8 @@ To ensure training stability, several filtering steps were applied:
   \item Filtering of extremely small boxes
   \item Consistency checks between labels and bounding boxes
 \end{itemize}
+
+These steps help avoid training issues such as NaN losses or incorrect detections.
 
 \subsection{Data Splitting}
 A K-Fold cross-validation strategy (K=10) was implemented to improve robustness and allow for fair model comparison. Each fold contains:
@@ -197,7 +201,7 @@ All models were trained using the following configuration:
   \item Batch size: limited due to hardware constraints
   \item Optimizer: Adam / SGD (depending on model)
   \item Pretrained weights: used for transfer learning
-  \item Training epochs: limited for experimentation
+  \item Training epochs: limited due to computational constraints
 \end{itemize}
 
 The experiments were conducted on a system equipped with GPU: NVIDIA GeForce MX330
@@ -213,8 +217,64 @@ Special care was taken to handle dataset-specific challenges:
   \item All data was converted to tensor format compatible with PyTorch detection models
 \end{itemize}
 
+The task is formulated as an object detection problem, where the model must both:
+\begin{itemize}
+  \item Locate lesions using bounding boxes
+  \item Classify each detected lesion as mass or calcification
+\end{itemize}
+
 \section{Experiments and Evaluation}
 \subsection{Evaluation Metrics}
+
+Different evaluation metrics are used to assess the performance of the object detection models. The evaluation is divided into two parts, detection metrics and classification metrics. The YOLO model is evaluated using standard metrics provided by the Ultralytics framework.
+
+\subsubsection{Detection Metrics}
+
+We evaluate the ability of the model to correctly localize lesions in the images, regardless of their class. A predicted bounding box is considered correct if it sufficiently overlaps with a ground truth box. This overlap is measured using the Intersection over Union (IoU).
+
+If the IoU between a predicted box and a ground truth box is greater than a predefined threshold (0.5), the detection is considered a True Positive (TP). Otherwise, it is counted as a False Positive (FP). Ground truth boxes that are not matched with any prediction are considered False Negatives (FN).
+
+From these values, the following metrics are computed:
+
+\begin{itemize}
+    \item Precision: the proportion of predicted boxes that are correct.
+    \item Recall: the proportion of real lesions that are successfully detected.
+\end{itemize}
+
+These metrics focus only on the spatial accuracy of the model (whether the lesion is found), without considering whether the predicted class is correct.
+
+\subsubsection{Classification Metrics}
+
+Classification metrics evaluate whether the model correctly identifies the type of lesion (mass or calcification). Classification is evaluated for detections that are spatially correct,so, a prediction is only considered for classification if its IoU with a ground truth box is above the threshold.
+
+For each valid detection:
+
+\begin{itemize}
+    \item If the predicted class matches the ground truth class, it is counted as a True Positive (TP).
+    \item If the predicted class is incorrect, it is counted as a False Positive (FP).
+\end{itemize}
+
+Additionally, ground truth lesions that are not detected are counted as False Negatives (FN), since they cannot be classified.
+
+From these values, precision and recall are computed again, but now reflecting both correct detection and correct classification. These metrics measure the overall performance of the model in solving the complete task.
+
+\subsubsection{Confusion Matrix}
+
+To better understand classification performance, a confusion matrix is also computed. This matrix only includes predictions that have a valid IoU match with ground truth boxes.
+
+The confusion matrix does not include missed detections or false positives without a valid match. Therefore, it provides a detailed view of classification errors, but does not reflect the full detection performance.
+
+\subsubsection{YOLO Evaluation (Ultralytics)}
+
+For the YOLO model, evaluation is performed using the validation function provided by the Ultralytics library. This framework computes standard object detection metrics:
+
+\begin{itemize}
+    \item mAP@0.5: mean Average Precision at an IoU threshold of 0.5.
+    \item mAP@0.5:0.95: mean Average Precision averaged over multiple IoU thresholds (from 0.5 to 0.95).
+\end{itemize}
+
+These metrics combine both detection and classification performance into a single measure, taking into account precision and recall across different confidence thresholds.
+
 \subsection{Experimental Setup}
 \subsection{Results}
 \section{Discussion}
