@@ -1,64 +1,122 @@
 import torch
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
+import numpy as np
 
 from src.dataset import CocoDataset
-from src.models.fasterrcnn import get_model as get_faster
-from src.models.retinanet import get_model as get_retina
 from src.config import *
+from src.visualize import show_predictions
+
 
 def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-# -------------------------
-# EVALUATE MODEL (PREDICTIONS)
-# -------------------------
+# =====================================================
+# CONFUSION MATRIX PLOT
+# =====================================================
+def plot_confusion_matrix(cm, title="Classification Confusion Matrix"):
+    plt.figure(figsize=(5, 4))
+    plt.imshow(cm, cmap="Blues")
+    plt.title(title)
+
+    classes = ["mass", "calc"]
+    ticks = np.arange(len(classes))
+
+    plt.xticks(ticks, classes)
+    plt.yticks(ticks, classes)
+
+    for i in range(len(cm)):
+        for j in range(len(cm)):
+            plt.text(j, i, cm[i][j], ha="center", va="center")
+
+    plt.colorbar()
+    plt.tight_layout()
+    plt.show()
+
+
+# =====================================================
+# IOU
+# =====================================================
+def iou(box1, box2):
+    xA = max(box1[0], box2[0])
+    yA = max(box1[1], box2[1])
+    xB = min(box1[2], box2[2])
+    yB = min(box1[3], box2[3])
+
+    inter = max(0, xB - xA) * max(0, yB - yA)
+
+    area1 = (box1[2]-box1[0]) * (box1[3]-box1[1])
+    area2 = (box2[2]-box2[0]) * (box2[3]-box2[1])
+
+    return inter / (area1 + area2 - inter + 1e-6)
+
+
+# =====================================================
+# PREDICTIONS
+# =====================================================
 def get_predictions(model, loader, device):
     model.eval()
-
-    preds = []
-    gts = []
+    preds, gts = [], []
 
     with torch.no_grad():
         for images, targets in loader:
-            images = [img.to(device) for img in images]
 
+            images = [img.to(device) for img in images]
             outputs = model(images)
 
             for out, tgt in zip(outputs, targets):
+
                 preds.append({
                     "boxes": out["boxes"].cpu(),
-                    "scores": out["scores"].cpu()
+                    "scores": out["scores"].cpu(),
+                    "labels": out["labels"].cpu()
                 })
+
                 gts.append({
-                    "boxes": tgt["boxes"]
+                    "boxes": tgt["boxes"].cpu(),
+                    "labels": tgt["labels"].cpu()
                 })
 
     return preds, gts
 
 
-# -------------------------
-# SIMPLE METRICS
-# -------------------------
-def compute_metrics(preds, gts, score_thresh=0.3):
+# =====================================================
+# DETECTION METRICS (SOLO CAJAS)
+# =====================================================
+def compute_detection_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
 
     tp, fp, fn = 0, 0, 0
 
     for p, g in zip(preds, gts):
 
         keep = p["scores"] > score_thresh
-        pboxes = p["boxes"][keep]
-        gboxes = g["boxes"]
+        pboxes = p["boxes"][keep].tolist()
 
-        if len(pboxes) == 0:
-            fn += len(gboxes)
-            continue
+        gboxes = g["boxes"].tolist()
+        matched = set()
 
-        if len(gboxes) == 0:
-            fp += len(pboxes)
-            continue
+        for pb in pboxes:
 
-        tp += min(len(pboxes), len(gboxes))
+            best_iou = 0
+            best_j = -1
+
+            for j, gb in enumerate(gboxes):
+                if j in matched:
+                    continue
+
+                score = iou(pb, gb)
+                if score > best_iou:
+                    best_iou = score
+                    best_j = j
+
+            if best_iou >= iou_thresh:
+                tp += 1
+                matched.add(best_j)
+            else:
+                fp += 1
+
+        fn += len(gboxes) - len(matched)
 
     precision = tp / (tp + fp + 1e-6)
     recall = tp / (tp + fn + 1e-6)
@@ -66,12 +124,71 @@ def compute_metrics(preds, gts, score_thresh=0.3):
     return precision, recall
 
 
-# -------------------------
-# YOLO EVAL
-# -------------------------
+# =====================================================
+# CLASSIFICATION METRICS (IGUAL QUE TU OPCIÓN A)
+# =====================================================
+def compute_classification_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
+
+    tp, fp, fn = 0, 0, 0
+    cm = [[0, 0], [0, 0]]
+
+    for p, g in zip(preds, gts):
+
+        keep = p["scores"] > score_thresh
+
+        pboxes = p["boxes"][keep].tolist()
+        plabels = p["labels"][keep].tolist()
+
+        gboxes = g["boxes"].tolist()
+        glabels = g["labels"].tolist()
+
+        matched_gt = set()
+
+        for pi, pb in enumerate(pboxes):
+
+            best_iou = 0
+            best_j = -1
+
+            for j, gb in enumerate(gboxes):
+                if j in matched_gt:
+                    continue
+
+                current_iou = iou(pb, gb)
+
+                if current_iou > best_iou:
+                    best_iou = current_iou
+                    best_j = j
+
+            if best_iou >= iou_thresh:
+
+                pred_class = plabels[pi]
+                gt_class = glabels[best_j]
+
+                cm[gt_class - 1][pred_class - 1] += 1
+
+                if pred_class == gt_class:
+                    tp += 1
+                else:
+                    fp += 1
+
+                matched_gt.add(best_j)
+
+            else:
+                fp += 1
+
+        fn += len(gboxes) - len(matched_gt)
+
+    precision = tp / (tp + fp + 1e-6)
+    recall = tp / (tp + fn + 1e-6)
+
+    return precision, recall, cm
+
+
+# =====================================================
+# YOLO
+# =====================================================
 def evaluate_yolo(model_path):
     from ultralytics import YOLO
-
     model = YOLO(model_path)
     results = model.val(data="data.yaml")
 
@@ -81,20 +198,20 @@ def evaluate_yolo(model_path):
     }
 
 
-# -------------------------
-# MAIN EVAL
-# -------------------------
+# =====================================================
+# MAIN
+# =====================================================
 def run_full_evaluation():
 
     device = DEVICE
 
-    val_dataset = CocoDataset(
+    dataset = CocoDataset(
         f"{ANNOTATIONS_DIR}/val.json",
         "data/raw/TIFF Images"
     )
 
-    val_loader = DataLoader(
-        val_dataset,
+    loader = DataLoader(
+        dataset,
         batch_size=1,
         shuffle=False,
         collate_fn=collate_fn
@@ -102,35 +219,64 @@ def run_full_evaluation():
 
     print("\n=== EVALUACIÓN MODELOS ===\n")
 
-    # ---------------- FASTERCNN ----------------
+    # =====================================================
+    # FASTERR-CNN
+    # =====================================================
     from src.models.fasterrcnn import get_model as get_faster
 
-    faster = get_faster(NUM_CLASSES)
-    faster.load_state_dict(torch.load("faster.pth", map_location=device))
-    faster.to(device)
+    model = get_faster(NUM_CLASSES)
+    model.load_state_dict(torch.load("faster.pth", map_location=device))
+    model.to(device)
 
-    preds, gts = get_predictions(faster, val_loader, device)
-    p, r = compute_metrics(preds, gts)
+    preds, gts = get_predictions(model, loader, device)
 
-    print(f"Faster R-CNN -> Precision: {p:.4f}, Recall: {r:.4f}")
+    det_p, det_r = compute_detection_metrics(preds, gts)
+    cls_p, cls_r, cm = compute_classification_metrics(preds, gts)
 
-    # ---------------- RETINANET ----------------
+    print("Faster R-CNN")
+    print(f"Detection     -> P: {det_p:.4f} | R: {det_r:.4f}")
+    print(f"Classification -> P: {cls_p:.4f} | R: {cls_r:.4f}")
+
+    plot_confusion_matrix(cm)
+
+    show_predictions(model, dataset, device, num_images=3)
+
+
+    # =====================================================
+    # RETINANET (COMMENTED)
+    # =====================================================
+    """
     from src.models.retinanet import get_model as get_retina
 
-    retina = get_retina(NUM_CLASSES)
-    retina.load_state_dict(torch.load("retina.pth", map_location=device))
-    retina.to(device)
+    model = get_retina(NUM_CLASSES)
+    model.load_state_dict(torch.load("retina.pth", map_location=device))
+    model.to(device)
 
-    preds, gts = get_predictions(retina, val_loader, device)
-    p, r = compute_metrics(preds, gts)
+    preds, gts = get_predictions(model, loader, device)
 
-    print(f"RetinaNet -> Precision: {p:.4f}, Recall: {r:.4f}")
+    det_p, det_r = compute_detection_metrics(preds, gts)
+    cls_p, cls_r, cm = compute_classification_metrics(preds, gts)
 
-    # ---------------- YOLO ----------------
+    print("RetinaNet")
+    print(f"Detection     -> P: {det_p:.4f} | R: {det_r:.4f}")
+    print(f"Classification -> P: {cls_p:.4f} | R: {cls_r:.4f}")
+
+    plot_confusion_matrix(cm)
+
+    show_predictions(model, dataset, device, num_images=3)
+    """
+
+
+    # =====================================================
+    # YOLO (COMMENTED)
+    # =====================================================
+    """
     yolo_score = evaluate_yolo("runs/detect/train/weights/best.pt")
 
-    print(f"YOLO mAP50: {yolo_score['map50']:.4f}")
-    print(f"YOLO mAP:   {yolo_score['map']:.4f}")
+    print("YOLO")
+    print(f"mAP50: {yolo_score['map50']:.4f}")
+    print(f"mAP:   {yolo_score['map']:.4f}")
+    """
 
 
 if __name__ == "__main__":
