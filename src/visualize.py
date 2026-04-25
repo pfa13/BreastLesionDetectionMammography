@@ -18,8 +18,9 @@ def show_predictions(model, dataset, device, num_images=5):
         ax.imshow(img.permute(1,2,0).cpu())
 
         # GT
-        for box in target["boxes"]:
+        for box, label in zip(target["boxes"], target["labels"]):
             x1, y1, x2, y2 = box
+
             rect = patches.Rectangle(
                 (x1, y1),
                 x2-x1,
@@ -30,8 +31,11 @@ def show_predictions(model, dataset, device, num_images=5):
             )
             ax.add_patch(rect)
 
+            label_name = "mass" if label.item() == 1 else "calc"
+            ax.text(x1, y1, label_name, color="green")
+
         # Predicciones
-        for box, score in zip(outputs["boxes"], outputs["scores"]):
+        for box, score, label in zip(outputs["boxes"], outputs["scores"], outputs["labels"]):
             if score > 0.5:
                 x1, y1, x2, y2 = box.cpu()
                 rect = patches.Rectangle(
@@ -43,6 +47,9 @@ def show_predictions(model, dataset, device, num_images=5):
                     facecolor='none'
                 )
                 ax.add_patch(rect)
+
+                label_name = "mass" if label.item() == 1 else "calc"
+                ax.text(x1, y1, f"{label_name} {score:.2f}", color="red")
 
         plt.show()
 
