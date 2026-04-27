@@ -82,7 +82,7 @@ def get_predictions(model, loader, device):
 
 
 # =====================================================
-# DETECTION METRICS (SOLO CAJAS)
+# DETECTION METRICS
 # =====================================================
 def compute_detection_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
 
@@ -125,7 +125,7 @@ def compute_detection_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
 
 
 # =====================================================
-# CLASSIFICATION METRICS (IGUAL QUE TU OPCIÓN A)
+# CLASSIFICATION METRICS
 # =====================================================
 def compute_classification_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
 
@@ -197,6 +197,20 @@ def evaluate_yolo(model_path):
         "map": results.box.map
     }
 
+# =====================================================
+# RT DETR
+# =====================================================
+def evaluate_rtdetr(model_path):
+    from ultralytics import YOLO
+
+    model = YOLO(model_path)
+    results = model.val(data="data.yaml")
+
+    return {
+        "map50": results.box.map50,
+        "map": results.box.map
+    }
+
 
 # =====================================================
 # MAIN
@@ -222,6 +236,7 @@ def run_full_evaluation():
     # =====================================================
     # FASTERR-CNN
     # =====================================================
+    """
     from src.models.fasterrcnn import get_model as get_faster
 
     model = get_faster(NUM_CLASSES)
@@ -240,10 +255,10 @@ def run_full_evaluation():
     plot_confusion_matrix(cm)
 
     show_predictions(model, dataset, device, num_images=3)
-
+    """
 
     # =====================================================
-    # RETINANET (COMMENTED)
+    # RETINANET
     # =====================================================
     """
     from src.models.retinanet import get_model as get_retina
@@ -268,15 +283,25 @@ def run_full_evaluation():
 
 
     # =====================================================
-    # YOLO (COMMENTED)
+    # YOLO
     # =====================================================
     """
-    yolo_score = evaluate_yolo("runs/detect/train/weights/best.pt")
+    yolo_score = evaluate_yolo("yolo26n.pt")
 
     print("YOLO")
     print(f"mAP50: {yolo_score['map50']:.4f}")
     print(f"mAP:   {yolo_score['map']:.4f}")
     """
+    # =====================================================
+    # RT DETR
+    # =====================================================
+
+    rtdetr_score = evaluate_rtdetr("rtdetr.pt")
+
+    print("RT-DETR")
+    print(f"mAP50: {rtdetr_score['map50']:.4f}")
+    print(f"mAP:   {rtdetr_score['map']:.4f}")
+    
 
 
 if __name__ == "__main__":
