@@ -121,6 +121,23 @@ def train_retinanet():
 
     torch.save(model.state_dict(), "retina.pth")
 
+# -------------------------
+# RT-DETR
+# -------------------------
+def train_rtdetr():
+    from ultralytics import YOLO
+
+    model = YOLO("rtdetr-l.pt")
+
+    model.train(
+        data="data.yaml",
+        epochs=EPOCHS,
+        imgsz=640,
+        batch=4
+    )
+
+    model.save("rtdetr.pt")
+
 
 # -------------------------
 # MAIN
@@ -136,8 +153,11 @@ def main(model_name):
     elif model_name == "retina":
         train_retinanet()
 
+    elif model_name == "rtdetr":
+        train_rtdetr()
+
     else:
-        print("Modelo no válido. Usa: yolo | faster | retina")
+        print("Modelo no válido. Usa: yolo | faster | retina  | rtdetr")
 
 
 if __name__ == "__main__":
