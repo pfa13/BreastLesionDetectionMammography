@@ -3,6 +3,11 @@
 # -------------------------
 data/*
 
+# -------------------------
+# DATA
+# -------------------------
+runs/*
+
 # Splits y annotations
 # data/splits/
 # data/annotations/
@@ -13,6 +18,7 @@ data/*
 *.pth
 *.pt
 *.ckpt
+
 
 # -------------------------
 # LOGS / EXPERIMENTOS

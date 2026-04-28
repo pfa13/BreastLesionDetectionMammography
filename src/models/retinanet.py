@@ -1,23 +1,19 @@
 import torchvision
-from torchvision.models.detection import retinanet_resnet50_fpn
+from torchvision.models.detection.retinanet import RetinaNetClassificationHead
 
 
-def get_model(num_classes=3):
+def get_model(num_classes):
 
-    model = retinanet_resnet50_fpn(weights="DEFAULT")
+    model = torchvision.models.detection.retinanet_resnet50_fpn(weights="DEFAULT")
 
-    # torchvision YA espera num_classes en training loop
-    # SOLO cambia predictor correctamente:
+    # número de anchors por location (depende del backbone FPN)
+    num_anchors = model.head.classification_head.num_anchors
 
-    from torchvision.models.detection.retinanet import RetinaNetHead
-
-    num_classes = num_classes + 1  # background
-
-    # ✔ forma segura: reemplazar head completa
-    model.head = RetinaNetHead(
+    # sustituir correctamente la head
+    model.head.classification_head = RetinaNetClassificationHead(
         in_channels=256,
-        num_anchors=model.head.classification_head.num_anchors,
-        num_classes=num_classes
+        num_anchors=num_anchors,
+        num_classes=num_classes  # ⚠️ SIN +1 (RetinaNet ya maneja background)
     )
 
     return model
