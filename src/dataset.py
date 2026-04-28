@@ -17,6 +17,16 @@ class CocoDataset(torch.utils.data.Dataset):
 
         self.img_root = Path(img_root)
 
+        raw_ids = sorted(set(ann["category_id"] for ann in self.annotations))
+
+        # empieza en 0 → lo convertimos a 1..N
+        if min(raw_ids) == 0:
+            self.shift_labels = 1
+        else:
+            self.shift_labels = 0
+
+        print(f"[DATASET] category_id range: {raw_ids} | shift={self.shift_labels}")
+
         self.img_to_anns = {}
         for ann in self.annotations:
             self.img_to_anns.setdefault(ann["image_id"], []).append(ann)
@@ -28,9 +38,10 @@ class CocoDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
 
         img_info = self.images[idx]
-        img_path = img_info["file_name"]
+        img_path = self.img_root / img_info["file_name"]
 
         image = read_image(img_path)
+
         if image is None:
             image = Image.open(img_path).convert("RGB")
             image = self.transform(image)
@@ -45,7 +56,6 @@ class CocoDataset(torch.utils.data.Dataset):
         for ann in anns:
             x, y, w, h = ann["bbox"]
 
-            # sanity check
             if w <= 1 or h <= 1:
                 continue
 
@@ -58,7 +68,8 @@ class CocoDataset(torch.utils.data.Dataset):
                 continue
 
             boxes.append([x1, y1, x2, y2])
-            labels.append(ann["category_id"])
+
+            labels.append(int(ann["category_id"]) + self.shift_labels)
 
         if len(boxes) == 0:
             boxes = torch.zeros((0, 4), dtype=torch.float32)
