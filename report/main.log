@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.7)  28 APR 2026 19:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.7)  29 APR 2026 07:37
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -824,17 +824,22 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <10> on input line 57.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <7> on input line 57.
-<./assets/ua.png, id=119, 263.98625pt x 191.71625pt>
+
+Overfull \hbox (0.59409pt too wide) in paragraph at lines 60--61
+\T1/lmr/m/n/10.95 strug-gle with small le-sions, es-pe-cially cal-ci-fi-ca-tions, al-though each paradigm presents
+ []
+
+<./assets/ua.png, id=135, 263.98625pt x 191.71625pt>
 File: ./assets/ua.png Graphic file (type png)
 <use ./assets/ua.png>
 Package pdftex.def Info: ./assets/ua.png  used on input line 68.
 (pdftex.def)             Requested size: 109.2601pt x 79.3472pt.
-<./assets/eps.png, id=120, 225.84375pt x 225.84375pt>
+<./assets/eps.png, id=136, 225.84375pt x 225.84375pt>
 File: ./assets/eps.png Graphic file (type png)
 <use ./assets/eps.png>
 Package pdftex.def Info: ./assets/eps.png  used on input line 72.
 (pdftex.def)             Requested size: 109.2601pt x 109.26184pt.
- [1
+[1
 
 {C:/Users/Paula/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc} <./assets/ua.png> <./assets/eps.png>] (main.toc
 LaTeX Font Info:    External font `lmex10' loaded for size
@@ -847,7 +852,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.30 ...{\numberline {9}Conclusion}{11}{section.9}
+l.30 ...ine {7.2}YOLO Results}{11}{subsection.7.2}
                                                   % [2])
 \tf@toc=\write6
 \openout6 = `main.toc'.
@@ -862,34 +867,35 @@ Overfull \hbox (14.88237pt too wide) in paragraph at lines 94--95
 []\T1/lmr/m/n/12 In re-cent years, deep learn-ing meth-ods^^Vparticularly con-vo-lu-tional neu-ral net-works^^Vhave
  []
 
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 105.
-(C:\Users\Paula\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
+[1]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 108.
+ (C:\Users\Paula\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [1{C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [2] [3] [4] [5] [6] [7]
-<faster_confusion_matrix.jpg, id=202, 369.63094pt x 308.65312pt>
+) [2{C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [3] [4] [5] [6] [7] [8{C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}] [9]
+<faster_confusion_matrix.jpg, id=235, 369.63094pt x 308.65312pt>
 File: faster_confusion_matrix.jpg Graphic file (type jpg)
 <use faster_confusion_matrix.jpg>
-Package pdftex.def Info: faster_confusion_matrix.jpg  used on input line 313.
+Package pdftex.def Info: faster_confusion_matrix.jpg  used on input line 336.
 (pdftex.def)             Requested size: 250.38564pt x 209.08069pt.
- [8]
-<faster_examples.jpg, id=210, 520.94624pt x 204.765pt>
+<faster_examples.jpg, id=237, 520.94624pt x 204.765pt>
 File: faster_examples.jpg Graphic file (type jpg)
 <use faster_examples.jpg>
-Package pdftex.def Info: faster_examples.jpg  used on input line 330.
+Package pdftex.def Info: faster_examples.jpg  used on input line 353.
 (pdftex.def)             Requested size: 455.24411pt x 178.94083pt.
- [9 <./faster_confusion_matrix.jpg> <./faster_examples.jpg>]
-<yolo_pr_curve.jpg, id=218, 551.05875pt x 371.88937pt>
+ [10 <./faster_confusion_matrix.jpg>]
+<yolo_pr_curve.jpg, id=247, 551.05875pt x 371.88937pt>
 File: yolo_pr_curve.jpg Graphic file (type jpg)
 <use yolo_pr_curve.jpg>
-Package pdftex.def Info: yolo_pr_curve.jpg  used on input line 362.
+Package pdftex.def Info: yolo_pr_curve.jpg  used on input line 385.
 (pdftex.def)             Requested size: 341.43307pt x 230.42715pt.
-<yolo_predictions.jpg, id=220, 882.29625pt x 307.90031pt>
+ [11 <./faster_examples.jpg>]
+<yolo_predictions.jpg, id=255, 882.29625pt x 307.90031pt>
 File: yolo_predictions.jpg Graphic file (type jpg)
 <use yolo_predictions.jpg>
-Package pdftex.def Info: yolo_predictions.jpg  used on input line 373.
+Package pdftex.def Info: yolo_predictions.jpg  used on input line 396.
 (pdftex.def)             Requested size: 455.24411pt x 158.86876pt.
- [10 <./yolo_pr_curve.jpg>] [11 <./yolo_predictions.jpg>]
-runsystem(latexminted cleantemp  --timestamp 20260428191036 FAD58DE7366495DB4650CFEFAC2FCD61)...disabled (restricted).
+ [12 <./yolo_pr_curve.jpg> <./yolo_predictions.jpg>] [13] [14]
+runsystem(latexminted cleantemp  --timestamp 20260429073748 FAD58DE7366495DB4650CFEFAC2FCD61)...disabled (restricted).
 
  (main.aux)
  ***********
@@ -897,23 +903,23 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: A325E027B268C6CDF54B0834F6DE88F7;4524.
+(rerunfilecheck)             Checksum: BD869824F1E506F7119472EDEE1ED209;5217.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 25323 strings out of 474486
- 499731 string characters out of 5743755
+ 25336 strings out of 474486
+ 499904 string characters out of 5743755
  1936542 words of memory out of 5000000
- 47249 multiletter control sequences out of 15000+600000
+ 47253 multiletter control sequences out of 15000+600000
  608352 words of font info for 67 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,8n,81p,750b,5050s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb>
-Output written on main.pdf (14 pages, 360096 bytes).
+<C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb>
+Output written on main.pdf (17 pages, 396036 bytes).
 PDF statistics:
- 273 PDF objects out of 1000 (max. 8388607)
- 50 named destinations out of 1000 (max. 500000)
- 263 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 326 PDF objects out of 1000 (max. 8388607)
+ 57 named destinations out of 1000 (max. 500000)
+ 295 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,14 +1,16 @@
 # Fdb version 4
-["biber main"] 1777396145.60352 "main.bcf" "main.bbl" "main" 1777396239.99188 0
-  "main.bcf" 1777396239 132699 782708cdf7869d96d60ccb1e314ecf26 "pdflatex"
+["biber main"] 1777396145.60352 "main.bcf" "main.bbl" "main" 1777441071.14654 0
+  "main.bcf" 1777441070 132699 782708cdf7869d96d60ccb1e314ecf26 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1777396234.87197 "c:/Users/Paula/Documents/Máster/BreastLesionDetectionMammography/report/main.tex" "main.pdf" "main" 1777396239.99354 0
+["pdflatex"] 1777441068.20653 "c:/Users/Paula/Documents/Máster/BreastLesionDetectionMammography/report/main.tex" "main.pdf" "main" 1777441071.14749 0
   "C:/Users/Paula/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1772041195 82507 a9eef8696c92627b87e9975edea03b2a ""
   "C:/Users/Paula/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1762530062 24225046 54c65b0bbf350d76d51d68a8c9c15abb ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc" 1256929440 2375 baa924870cfb487815765f9094cf3728 ""
+  "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc" 1256929440 2840 216e6e45ad352e2456e1149f28885bee ""
+  "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc" 1256929440 2327 9d6df24f9c4f7368395224341a95523a ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc" 1256929440 3031 6c4d3515bf7115d8518af1c9ab97ca44 ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecrm1200.tfm" 993062126 3152 4850ff0163852b7fab34bd55e1197f28 ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmr12.tfm" 1136765053 1288 655e228510b4c2a1abe905c368440826 ""
@@ -38,6 +40,9 @@
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb" 1256929440 119235 05e5c8d6d60439433e50047898c2c0e0 ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb" 1256929440 113634 9384aebdf26f9881e046a4b5574566db ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb" 1256929440 119752 1bd8d06e4079df624bf59ce3ad7c9aa6 ""
+  "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb" 1256929440 122174 a2d5e73f396ddbeb3bdf5c79aea0993d ""
+  "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb" 1256929440 27863 09ce3735688ffde955e72da27c95b61a ""
+  "C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb" 1256929440 27802 5c876bb2c4040caaf035d60bd74a86bd ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mkii" 1580390158 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/tex/generic/atbegshi/atbegshi.sty" 1575571100 24708 5584a51a7101caf7e6bbf1fc27d8f7b1 ""
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/tex/generic/babel/babel.sty" 1704647332 150008 7a05b0fdc0167c04e192003e780ab195 ""
@@ -147,15 +152,15 @@
   "C:/Users/Paula/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "assets/eps.png" 1777391266 3934 69f3f12e0e36cfa4d0f4ded887c36aa1 ""
   "assets/ua.png" 1777391266 5726 3e85998275a27f03548e192fbc1251a4 ""
-  "c:/Users/Paula/Documents/Máster/BreastLesionDetectionMammography/report/main.tex" 1777396227 21144 cad954182123b898e9e5557adb71bc5d ""
+  "c:/Users/Paula/Documents/Máster/BreastLesionDetectionMammography/report/main.tex" 1777441056 26841 96e772421d7b9657cfcac7eccfbf6163 ""
   "faster_confusion_matrix.jpg" 1777393128 17660 3a7802c67b05ed21abb10dca5696fdd7 ""
   "faster_examples.jpg" 1777393128 21787 bbd80cbbd691029fad3846204a18fcb5 ""
-  "main.aux" 1777396239 5777 36d23c3d95c1318e8b5924584d9c9217 "pdflatex"
+  "main.aux" 1777441070 6307 a4bfa3d1401b8c2c34d8bee8ef5c7ee6 "pdflatex"
   "main.bbl" 1777396157 486 ee04f40f768daeed26442158e95aba61 "biber main"
-  "main.out" 1777396239 4524 a325e027b268c6cdf54b0834f6de88f7 "pdflatex"
-  "main.run.xml" 1777396239 2436 de8c02d31fee652219407c218bf3eced "pdflatex"
-  "main.tex" 1777396227 21144 cad954182123b898e9e5557adb71bc5d ""
-  "main.toc" 1777396239 2479 4b04290973c5a75cdf53249a1ce86de4 "pdflatex"
+  "main.out" 1777441070 5217 bd869824f1e506f7119472edee1ed209 "pdflatex"
+  "main.run.xml" 1777441070 2436 de8c02d31fee652219407c218bf3eced "pdflatex"
+  "main.tex" 1777441056 26841 96e772421d7b9657cfcac7eccfbf6163 ""
+  "main.toc" 1777441070 2841 5d4b2e3e70ef7fe0af26e40ff41c4925 "pdflatex"
   "yolo_pr_curve.jpg" 1777393128 30123 826419dc856742b1496b776bf93de00f ""
   "yolo_predictions.jpg" 1777393128 84603 99a39b7fe5421fb5bc017919ddca43ba ""
   (generated)

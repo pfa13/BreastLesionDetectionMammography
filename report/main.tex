@@ -55,9 +55,9 @@ Supervisor(s): Prof. Jorge Azorín López} % Sets the supervisor of the paper / 
 \pagenumbering{gobble} % Stops counting the pages from this point until changed again.
 \maketitle
 \begin{abstract}
-  Breast cancer detection in mammography is a challenging task due to the small size and low contrast of lesions such as masses and calcifications. In this project, we evaluate different object detection models, including YOLOv8, Faster R-CNN, and RetinaNet, for automated lesion detection.
+Breast cancer detection in mammography is challenging due to the small size and low contrast of lesions such as masses and calcifications. In this work, we evaluate object detection models from different paradigms: one-stage (YOLOv8, RetinaNet), two-stage (Faster R-CNN), and transformer-based (RT-DETR).
 
-The dataset is preprocessed and converted into standard formats, and the models are fine-tuned on annotated mammographic images. The aim is to compare the performance of different detection paradigms and identify the most suitable approach for this medical imaging task.
+The dataset is preprocessed and adapted to standard formats, and all models are fine-tuned on annotated mammographic images. Results show that all approaches struggle with small lesions, especially calcifications, although each paradigm presents different strengths. This study highlights the limitations of current detectors and the need for improved methods in medical imaging.
 \end{abstract}
 \begin{center}
     \vfill
@@ -93,6 +93,8 @@ One of the main challenges in mammography analysis is the detection of subtle ab
 
 In recent years, deep learning methods—particularly convolutional neural networks—have shown remarkable performance in computer vision tasks, including object detection. These methods have the potential to assist radiologists by providing automated and consistent detection of suspicious regions.
 
+More recently, transformer-based architectures have been introduced in object detection, enabling global reasoning over the image and reducing the need for handcrafted components such as anchor boxes. These approaches have shown promising results in natural images and are explored in this work through the RT-DETR model.
+
 In this project, we explore the application of state-of-the-art object detection models to the problem of breast lesion detection in mammography. We focus on comparing different detection paradigms, including one-stage and two-stage approaches, and adapting them to the specific constraints of medical imaging data.
 
 \section{Related work}
@@ -101,10 +103,13 @@ Computer-aided detection (CAD) systems have long been used to assist radiologist
 With the advent of deep learning, convolutional neural networks (CNNs) have significantly improved performance in medical image analysis. In particular, object detection frameworks have been increasingly applied to mammography for identifying lesions.
 
 Object detection models can be broadly categorized into:
+
 \begin{itemize}
   \item Two-stage detectors, such as Faster R-CNN, which first generate region proposals and then classify them. These models tend to achieve high accuracy but at the cost of computational complexity.
+  
   \item One-stage detectors, such as YOLO and RetinaNet, which perform detection in a single pass. These models are typically faster and more suitable for real-time applications.
-  \item Transformer-based detectors, such as DETR, which reformulate object detection as a direct set prediction problem. Although promising, they often require large datasets and computational resources.
+  
+  \item Transformer-based detectors, such as DETR and its variants (e.g., RT-DETR), which reformulate object detection as a direct set prediction problem without relying on anchor boxes. These models enable global context modeling but often require careful training strategies and sufficient data.
 \end{itemize}
 
 In the context of mammography, challenges such as small object size and class imbalance make model selection and adaptation particularly important.
@@ -194,6 +199,11 @@ Faster R-CNN first generates region proposals using a Region Proposal Network (R
 \subsubsection{RetinaNet (One-stage detector with Focal Loss)}
 RetinaNet addresses class imbalance using Focal Loss, which reduces the impact of easy negatives during training. This makes it particularly suitable for datasets with many background regions, such as mammography.
 
+\subsubsection{RT-DETR (Transformer-based detector)}
+RT-DETR is a real-time object detection model based on transformer architectures. Unlike traditional detectors, it does not rely on anchor boxes or region proposals. Instead, it directly predicts a set of bounding boxes and class labels using attention mechanisms.
+
+This approach enables global reasoning across the entire image, which can be beneficial for complex medical images. However, transformer-based models are typically more data-hungry and may struggle when trained on smaller datasets, such as mammography collections.
+
 \subsection{Training Setup}
 All models were trained using the following configuration:
 \begin{itemize}
@@ -276,10 +286,23 @@ For the YOLO model, evaluation is performed using the validation function provid
 These metrics combine both detection and classification performance into a single measure, taking into account precision and recall across different confidence thresholds.
 
 \subsection{Experimental Setup}
+\subsection{Experimental Setup}
 
+All experiments were conducted using the same dataset splits and preprocessing pipeline to ensure a fair comparison between models.
+
+The dataset was divided using a K-Fold cross-validation strategy (K=10), although due to computational constraints, experiments were performed on a single fold. Each split consisted of a training set and a validation set.
+
+Images were resized to a fixed resolution of 512 × 512 pixels. All images were converted to RGB format and normalized before being fed into the models.
+
+For Faster R-CNN and RetinaNet, models were implemented using PyTorch and trained using pretrained weights. Training was performed for a limited number of epochs due to hardware constraints, with a small batch size. The AdamW optimizer was used, with a learning rate of $1 \times 10^{-4}$.
+
+YOLO and RT-DETR models were trained and evaluated using the Ultralytics framework, which provides built-in training and validation pipelines. Default training configurations were used, with minor adjustments to adapt to the dataset format.
+
+During evaluation, a confidence threshold was applied to filter predictions, and an IoU threshold of 0.5 was used to determine correct detections. For Faster R-CNN and RetinaNet, a custom evaluation pipeline was implemented to compute detection and classification metrics. For YOLO and RT-DETR, standard metrics such as mAP@0.5 and mAP@0.5:0.95 were obtained directly from the framework.
+
+All experiments were conducted on a system equipped with an NVIDIA GeForce MX330 GPU, which imposed limitations on model size, batch size, and training time.
 
 \section{Results}
-
 This section presents the experimental results obtained with the Faster R-CNN and YOLO models on the mammography lesion detection task. The evaluation focuses on lesion localization (detection of bounding boxes) and lesion type recognition (mass or calcification).
 
 \subsection{Faster R-CNN Results}
@@ -375,16 +398,65 @@ Figure \ref{fig:yolo_examples} includes several images with labels and the predi
 \label{fig:yolo_examples}
 \end{figure}
 
+\subsection{RetinaNet Results}
+
+The RetinaNet model showed limited performance:
+
+\begin{itemize}
+    \item Detection Precision: 0.0336
+    \item Detection Recall: 0.4167
+    \item Classification Precision: 0.0000
+    \item Classification Recall: 0.0000
+\end{itemize}
+
+Although RetinaNet improved slightly in detection precision compared to Faster R-CNN, it failed to correctly classify detected lesions. This suggests that the model struggled to learn discriminative features for the two classes, possibly due to class imbalance and the small size of calcifications.
+
+\subsection{RT-DETR Results}
+
+The RT-DETR model was evaluated using the Ultralytics framework, which provides standard object detection metrics:
+
+\begin{itemize}
+    \item mAP@0.5: 0.0849
+    \item mAP@0.5:0.95: 0.0304
+\end{itemize}
+
+Class-wise performance showed a strong imbalance:
+
+\begin{itemize}
+    \item Mass: moderate detection performance
+    \item Calcification: no correct detections
+\end{itemize}
+
+Despite its modern architecture, RT-DETR struggled due to the limited dataset size and the difficulty of detecting small lesions. However, it demonstrated competitive precision compared to other models, suggesting potential with larger datasets or longer training.
 
 \section{Discussion}
-The models showed similar limitations when detecting mammographic lesions, especially calcifications. Masses were generally easier to detect and classify.
 
-Faster R-CNN provided interpretable results through separate detection and classification metrics, while YOLO offered a stronger standard object detection benchmark through mAP evaluation.
+All evaluated models exhibited significant challenges when applied to mammographic lesion detection, particularly for calcifications. These lesions are small, low-contrast, and underrepresented in the dataset, making them difficult to learn.
 
-YOLO achieved an overall mAP@0.5 of 0.355, while Faster R-CNN reached a detection precision of 0.3846 and recall of 0.4167. Although the metrics are not directly identical, both models demonstrated moderate performance and difficulties with small lesions.
+Faster R-CNN achieved high recall but very low precision, indicating that it tends to over-detect lesions. This behavior may be desirable in medical applications where missing a lesion is critical, but it also increases the burden of false positives.
 
-The main challenge in both approaches was the calcification class, which consistently obtained lower performance than masses.
+RetinaNet showed limited effectiveness, especially in classification, suggesting that focal loss alone is not sufficient to address the class imbalance and small object detection challenges in this dataset.
+
+RT-DETR, despite being a more recent transformer-based approach, achieved modest performance. Its reliance on global attention may not fully compensate for the lack of training data, which is crucial for transformer models.
+
+Overall, YOLO provided the most balanced performance among the evaluated models, achieving the highest mAP. However, all models struggled with calcifications, highlighting a key limitation of current detection approaches in mammography.
+
+These results suggest that future improvements should focus on:
+\begin{itemize}
+    \item Better handling of small objects (e.g., multi-scale training)
+    \item Data augmentation techniques
+    \item Class imbalance mitigation strategies
+    \item Use of higher resolution inputs or patch-based methods
+\end{itemize}
 
 \section{Conclusion}
+
+In this work, we evaluated multiple object detection paradigms for breast lesion detection in mammography, including one-stage (YOLO, RetinaNet), two-stage (Faster R-CNN), and transformer-based (RT-DETR) models.
+
+The results show that all models face significant challenges, particularly in detecting and classifying calcifications. Faster R-CNN achieved high recall but low precision, RetinaNet struggled with classification, and RT-DETR showed limited performance due to data constraints.
+
+Among all models, YOLO provided the most balanced performance, although there is still considerable room for improvement.
+
+This study highlights the difficulty of applying general-purpose object detection models to medical imaging tasks. Future work should explore specialized architectures, improved preprocessing techniques, and larger annotated datasets to enhance performance.
 
 \end{document}

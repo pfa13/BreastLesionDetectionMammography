@@ -31,7 +31,7 @@ def is_valid_box(x, y, w, h, img_w, img_h):
 def convert_dmid_to_coco(images, metadata_path, output_json):
 
     df = pd.read_excel(metadata_path, header=None)
-    df = df.dropna()  # 🔥 ELIMINA NAN DIRECTOS
+    df = df.dropna()  # ELIMINA NAN DIRECTOS
 
     coco = {
         "images": [],
