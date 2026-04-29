@@ -102,7 +102,18 @@ def train_retinanet():
         for images, targets in train_loader:
 
             images = [img.to(DEVICE) for img in images]
-            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+            new_targets = []
+            for t in targets:
+                new_t = {}
+                for k, v in t.items():
+                    if k == "labels":
+                        # convertir 1,2 → 0,1
+                        new_t[k] = (v - 1).to(DEVICE)
+                    else:
+                        new_t[k] = v.to(DEVICE)
+                new_targets.append(new_t)
+
+            targets = new_targets
 
             loss_dict = model(images, targets)
             loss = sum(loss for loss in loss_dict.values())

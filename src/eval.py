@@ -77,14 +77,15 @@ def get_predictions(model, loader, device):
                     "boxes": tgt["boxes"].cpu(),
                     "labels": tgt["labels"].cpu()
                 })
-
+    total_preds = sum(len(p["boxes"]) for p in preds)
+    print(f"Total predictions: {total_preds}")
     return preds, gts
 
 
 # =====================================================
 # DETECTION METRICS
 # =====================================================
-def compute_detection_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
+def compute_detection_metrics(preds, gts, score_thresh=0.01, iou_thresh=0.3):
 
     tp, fp, fn = 0, 0, 0
 
@@ -163,6 +164,10 @@ def compute_classification_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5)
 
                 pred_class = plabels[pi]
                 gt_class = glabels[best_j]
+
+                # si tu dataset usa 1..N, pero modelo usa 0..N-1
+                pred_class = int(pred_class) + 1
+                gt_class = int(gt_class)
 
                 cm[gt_class - 1][pred_class - 1] += 1
 
@@ -295,7 +300,7 @@ def run_full_evaluation():
     # =====================================================
     # RT DETR
     # =====================================================
-
+    
     rtdetr_score = evaluate_rtdetr("rtdetr.pt")
 
     print("RT-DETR")
