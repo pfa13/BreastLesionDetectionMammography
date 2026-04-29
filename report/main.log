@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.7)  29 APR 2026 07:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.7)  29 APR 2026 20:25
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -894,8 +894,19 @@ File: yolo_predictions.jpg Graphic file (type jpg)
 <use yolo_predictions.jpg>
 Package pdftex.def Info: yolo_predictions.jpg  used on input line 396.
 (pdftex.def)             Requested size: 455.24411pt x 158.86876pt.
- [12 <./yolo_pr_curve.jpg> <./yolo_predictions.jpg>] [13] [14] [15]
-runsystem(latexminted cleantemp  --timestamp 20260429074335 FAD58DE7366495DB4650CFEFAC2FCD61)...disabled (restricted).
+ [12 <./yolo_pr_curve.jpg> <./yolo_predictions.jpg>]
+<retina_matrix.png, id=266, 361.35pt x 289.08pt>
+File: retina_matrix.png Graphic file (type png)
+<use retina_matrix.png>
+Package pdftex.def Info: retina_matrix.png  used on input line 414.
+(pdftex.def)             Requested size: 250.38564pt x 200.3079pt.
+<retina-box1.jpg, id=268, 1348.03625pt x 397.485pt>
+File: retina-box1.jpg Graphic file (type jpg)
+<use retina-box1.jpg>
+Package pdftex.def Info: retina-box1.jpg  used on input line 423.
+(pdftex.def)             Requested size: 455.24411pt x 134.23334pt.
+ [13 <./retina_matrix.png> <./retina-box1.jpg>] [14] [15]
+runsystem(latexminted cleantemp  --timestamp 20260429202516 FAD58DE7366495DB4650CFEFAC2FCD61)...disabled (restricted).
 
  (main.aux)
  ***********
@@ -909,17 +920,17 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 25339 strings out of 474486
- 499933 string characters out of 5743755
+ 25357 strings out of 474486
+ 500322 string characters out of 5743755
  1936542 words of memory out of 5000000
- 47254 multiletter control sequences out of 15000+600000
+ 47270 multiletter control sequences out of 15000+600000
  608352 words of font info for 67 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,8n,81p,750b,5050s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Paula/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb>
-Output written on main.pdf (18 pages, 398050 bytes).
+Output written on main.pdf (18 pages, 460430 bytes).
 PDF statistics:
- 336 PDF objects out of 1000 (max. 8388607)
- 59 named destinations out of 1000 (max. 500000)
- 303 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 343 PDF objects out of 1000 (max. 8388607)
+ 61 named destinations out of 1000 (max. 500000)
+ 313 words of extra memory for PDF output out of 10000 (max. 10000000)
 
