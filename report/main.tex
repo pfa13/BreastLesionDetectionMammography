@@ -409,7 +409,21 @@ The RetinaNet model showed limited performance:
     \item Classification Recall: 0.0000
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{retina_matrix.png}
+\caption{Confusion matrix for RetinaNet classification.}
+\label{fig:retina_cm}
+\end{figure}
+
 Although RetinaNet improved slightly in detection precision compared to Faster R-CNN, it failed to correctly classify detected lesions. This suggests that the model struggled to learn discriminative features for the two classes, possibly due to class imbalance and the small size of calcifications.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{retina-box1.jpg}
+\caption{Examples of RetinaNet predictions on validation images.}
+\label{fig:retina_examples}
+\end{figure}
 
 \subsection{RT-DETR Results}
 
