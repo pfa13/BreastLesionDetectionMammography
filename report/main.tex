@@ -274,9 +274,9 @@ To better understand classification performance, a confusion matrix is also comp
 
 The confusion matrix does not include missed detections or false positives without a valid match. Therefore, it provides a detailed view of classification errors, but does not reflect the full detection performance.
 
-\subsubsection{YOLO Evaluation (Ultralytics)}
+\subsubsection{Ultralytics Evaluation}
 
-For the YOLO model, evaluation is performed using the validation function provided by the Ultralytics library. This framework computes standard object detection metrics:
+For YOLO and RT-DETR evaluation is performed using the validation function provided by the Ultralytics library. This framework computes standard object detection metrics:
 
 \begin{itemize}
     \item mAP@0.5: mean Average Precision at an IoU threshold of 0.5.
@@ -285,7 +285,6 @@ For the YOLO model, evaluation is performed using the validation function provid
 
 These metrics combine both detection and classification performance into a single measure, taking into account precision and recall across different confidence thresholds.
 
-\subsection{Experimental Setup}
 \subsection{Experimental Setup}
 
 All experiments were conducted using the same dataset splits and preprocessing pipeline to ensure a fair comparison between models.
@@ -399,15 +398,26 @@ Figure \ref{fig:yolo_examples} includes several images with labels and the predi
 \end{figure}
 
 \subsection{RetinaNet Results}
+The RetinaNet model obtained very poor results after training for only three epochs. Due to the limited training time and hardware constraints, the model did not converge properly and was not able to learn meaningful lesion patterns.
 
-The RetinaNet model showed limited performance:
+\begin{table}
+[H]
+\centering
+\caption{RetinaNet evaluation results.}
+\label{tab:retinanet_results}
+\begin{tabular}{lc}
+\hline
+Metric & Value \\
+\hline
+Detection Precision & 0.0336 \\
+Detection Recall & 0.0833 \\
+Classification Precision & 0.0000 \\
+Classification Recall & 0.0000 \\
+\hline
+\end{tabular}
+\end{table}
 
-\begin{itemize}
-    \item Detection Precision: 0.0336
-    \item Detection Recall: 0.4167
-    \item Classification Precision: 0.0000
-    \item Classification Recall: 0.0000
-\end{itemize}
+The detection precision was extremely low, which means that most predicted boxes were incorrect. Detection recall was also very low, indicating that only a small number of real lesions were detected.Regarding classification, both precision and recall were zero. This happened because the model did not correctly classify any lesion in the validation set. The confusion matrix contained only zeros, which suggests that no valid predictions were matched with the ground truth boxes under the IoU threshold.
 
 \begin{figure}[H]
 \centering
@@ -416,49 +426,83 @@ The RetinaNet model showed limited performance:
 \label{fig:retina_cm}
 \end{figure}
 
-Although RetinaNet improved slightly in detection precision compared to Faster R-CNN, it failed to correctly classify detected lesions. This suggests that the model struggled to learn discriminative features for the two classes, possibly due to class imbalance and the small size of calcifications.
+Visual inspection of the predicted images confirms these results.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{retina-box1.jpg}
-\caption{Examples of RetinaNet predictions on validation images.}
+\caption{Examples of RetinaNet predictions on validation images. Green boxes represent ground truth and red boxes represent model predictions.}
 \label{fig:retina_examples}
 \end{figure}
 
+In the examples generated with the visualization function, no red predicted bounding boxes appeared. This indicates that the model was not able to produce confident detections after such a short training process.These results are expected because RetinaNet usually requires more training time to optimize both localization and classification. Training for only three epochs was not enough for the model to learn the characteristics of masses and calcifications. For a fairer comparison, RetinaNet should be trained for more epochs.
+
+
 \subsection{RT-DETR Results}
 
-The RT-DETR model was evaluated using the Ultralytics framework, which provides standard object detection metrics:
+RT-DETR was evaluated on the validation set using the metrics provided by the Ultralytics framework. The model obtained a global mAP@0.5 of 0.184, which indicates limited detection performance on this dataset. Analysing each class separately, the model achieved an AP of 0.367 for \textit{mass}, while the AP for \textit{calcification} was 0.000.
 
-\begin{itemize}
-    \item mAP@0.5: 0.0849
-    \item mAP@0.5:0.95: 0.0304
-\end{itemize}
+These results suggest that the model was able to detect some masses, but it was not able to learn reliable patterns for calcifications.
 
-Class-wise performance showed a strong imbalance:
+\begin{table}[H]
+\centering
+\caption{RT-DETR validation results.}
+\begin{tabular}{l c}
+\hline
+Metric & Value \\
+\hline
+AP@0.5 (Mass) & 0.367 \\
+AP@0.5 (Calcification) & 0.000 \\
+mAP@0.5 (All classes) & 0.184 \\
+\hline
+\end{tabular}
+\label{tab:rtdetr_results}
+\end{table}
 
-\begin{itemize}
-    \item Mass: moderate detection performance
-    \item Calcification: no correct detections
-\end{itemize}
+Figure \ref{fig:rtdetr_pr_curve} shows the Precision--Recall curve. The curve confirms that the model performed better for the mass class, while the calcification class remained zero.
 
-Despite its modern architecture, RT-DETR struggled due to the limited dataset size and the difficulty of detecting small lesions. However, it demonstrated competitive precision compared to other models, suggesting potential with larger datasets or longer training.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\textwidth]{rtdetr_pr_curve.png}
+    \caption{Precision--Recall curve obtained by RT-DETR on the validation set.}
+    \label{fig:rtdetr_pr_curve}
+\end{figure}
+
+Visual inspection of the predictions also revealed several limitations. In some mammograms, the model produced multiple bounding boxes around the same region, generating false positives. In other cases, calcifications were incorrectly classified as masses. Some validation images did not contain any predicted boxes, meaning that the lesion was completely missed.
+
+Figure \ref{fig:rtdetr_predictions} compares the ground-truth annotations with the predictions generated by RT-DETR. These examples illustrate that, although the model can identify certain suspicious areas, localization and classification remain unstable.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{rtdetr_predictions.jpg}
+    \caption{Examples of RT-DETR predictions.}
+    \label{fig:rtdetr_predictions}
+\end{figure}
+
+RT-DETR achieved moderate performance for masses but failed to detect calcifications. The model would require more training time and additional data to become competitive on this task.
 
 \section{Discussion}
+The experimental results show that mammographic lesion detection remains a challenging task for all evaluated models. Although some lesions were correctly detected, none of the detectors achieved a consistent performance across both classes. The main difficulty was the detection of calcifications, masses were generally easier to identify. This difference expected because masses are usually larger and have clearer shapes, so models can learn their visual patterns more easily, while calcifications are very small and may appear with low contrast.
 
-All evaluated models exhibited significant challenges when applied to mammographic lesion detection, particularly for calcifications. These lesions are small, low-contrast, and underrepresented in the dataset, making them difficult to learn.
+YOLO obtained the best overall balance of results. It achieved the highest mAP@0.5 and better class performance than the other approaches. This suggests that one-stage detectors can be a strong option for this task, especially when computational resources are limited. However, even this model still showed weak performance for calcifications, which means that the best model in this study is still far from ideal for clinical use.
 
-Faster R-CNN achieved high recall but very low precision, indicating that it tends to over-detect lesions. This behavior may be desirable in medical applications where missing a lesion is critical, but it also increases the burden of false positives.
+Faster R-CNN produced moderate results and showed acceptable recall. It was able to detect several lesions, especially masses, but it also generated false positives and missed many calcifications. As a two-stage detector, Faster R-CNN is usually strong in localisation quality, but in this case the limited dataset size and hardware constraints reduced its potential. With more training time, Faster R-CNN could likely improve significantly.
 
-RetinaNet showed limited effectiveness, especially in classification, suggesting that focal loss alone is not sufficient to address the class imbalance and small object detection challenges in this dataset.
+RetinaNet obtained the weakest results among the CNN-based detectors. In this project, the model was trained for only three epochs due to hardware limitations, and this was not enough for convergence. The absence of correct classifications and the very low detection scores indicate undertraining rather than an intrinsic weakness of the architecture. Therefore, the results obtained here should be interpreted carefully.
 
-RT-DETR, despite being a more recent transformer-based approach, achieved modest performance. Its reliance on global attention may not fully compensate for the lack of training data, which is crucial for transformer models.
+RT-DETR achieved intermediate performance. It was able to detect some masses, but it completely failed on calcifications. The model also generated several false positives and unstable predictions. Transformer-based detectors usually require more data and longer training to reach their full potential. The performance of the model may have been limited due to the small dataset and training time. In this project, RT-DETR likely suffered from both factors.
 
-Overall, YOLO provided the most balanced performance among the evaluated models, achieving the highest mAP. However, all models struggled with calcifications, highlighting a key limitation of current detection approaches in mammography.
+One-stage YOLO model obtained the best global score. The two-stage Faster R-CNN model provided more conservative predictions, although with lower overall performance. RetinaNet was strongly affected by short training. The transformer-based RT-DETR showed potential, but it likely needs more data and computation than available in this work.
 
-These results suggest that future improvements should focus on:
+Training conditions had a strong influence on the final results. Models were trained for only a small number of epochs because of hardware limitations. Therefore, the comparison reflects not only architectural differences, but also practical constraints. Under a larger computational budget, the ranking between models could change. Faster R-CNN and RT-DETR, in particular, may improve notably with longer training.
+
+Another important limitation is the dataset itself. Medical datasets are often small, imbalanced, and difficult to annotate. This affects generalisation and increases the risk of overfitting. It also explains why all models showed unstable behaviour on the minority class.
+
+These results suggest future improvements:
+
 \begin{itemize}
-    \item Better handling of small objects (e.g., multi-scale training)
-    \item Data augmentation techniques
+    \item Applying data augmentation techniques.
+    \item Training for more epochs with early stopping and learning-rate scheduling.
     \item Class imbalance mitigation strategies
     \item Use of higher resolution inputs or patch-based methods
 \end{itemize}
@@ -477,10 +521,12 @@ The repository includes data preprocessing scripts, model implementations, train
 
 In this work, we evaluated multiple object detection paradigms for breast lesion detection in mammography, including one-stage (YOLO, RetinaNet), two-stage (Faster R-CNN), and transformer-based (RT-DETR) models.
 
-The results show that all models face significant challenges, particularly in detecting and classifying calcifications. Faster R-CNN achieved high recall but low precision, RetinaNet struggled with classification, and RT-DETR showed limited performance due to data constraints.
+The results showed that all models could detect some masses, but all of them had difficulties with calcifications, which were the most challenging lesions due to their small size and low contrast.
 
-Among all models, YOLO provided the most balanced performance, although there is still considerable room for improvement.
+Among the evaluated methods, YOLO achieved the best overall performance and the most balanced results. Faster R-CNN obtained moderate performance and showed potential with more training. RetinaNet was strongly limited by short training time, while RT-DETR detected some masses but struggled with calcifications.
 
-This study highlights the difficulty of applying general-purpose object detection models to medical imaging tasks. Future work should explore specialized architectures, improved preprocessing techniques, and larger annotated datasets to enhance performance.
+These findings show that both model architecture and training conditions are important in medical imaging tasks.
+
+Future work should focus on larger datasets, longer training, higher-resolution images, and methods specifically designed for small lesion detection.
 
 \end{document}
