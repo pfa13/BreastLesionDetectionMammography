@@ -36,7 +36,7 @@ def read_image_size(img_path):
         return None
 
 
-# 🔥 SAFE NORMALIZER (CRÍTICO)
+# SAFE NORMALIZER
 def safe_normalize(img):
     img = img.astype(np.float32)
 
@@ -62,7 +62,7 @@ def safe_normalize(img):
 def read_image(img_path):
     ext = Path(img_path).suffix.lower()
 
-    # ---------------- DICOM ----------------
+    # DICOM
     if ext == ".dcm":
         try:
             dcm = pydicom.dcmread(img_path)
@@ -80,7 +80,7 @@ def read_image(img_path):
         except:
             return None
 
-    # ---------------- TIFF ----------------
+    # TIFF
     if ext in [".tif", ".tiff"]:
         try:
             img = tifffile.imread(img_path)
@@ -99,7 +99,7 @@ def read_image(img_path):
         except:
             return None
 
-    # ---------------- RGB / GRAY ----------------
+    #  RGB / GRAY
     try:
         img = Image.open(img_path).convert("L")
         img = np.array(img)
