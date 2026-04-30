@@ -12,9 +12,9 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-# =====================================================
+
 # CONFUSION MATRIX PLOT
-# =====================================================
+
 def plot_confusion_matrix(cm, title="Classification Confusion Matrix"):
     plt.figure(figsize=(5, 4))
     plt.imshow(cm, cmap="Blues")
@@ -35,9 +35,9 @@ def plot_confusion_matrix(cm, title="Classification Confusion Matrix"):
     plt.show()
 
 
-# =====================================================
+
 # IOU
-# =====================================================
+
 def iou(box1, box2):
     xA = max(box1[0], box2[0])
     yA = max(box1[1], box2[1])
@@ -52,9 +52,9 @@ def iou(box1, box2):
     return inter / (area1 + area2 - inter + 1e-6)
 
 
-# =====================================================
+
 # PREDICTIONS
-# =====================================================
+
 def get_predictions(model, loader, device):
     model.eval()
     preds, gts = [], []
@@ -82,9 +82,9 @@ def get_predictions(model, loader, device):
     return preds, gts
 
 
-# =====================================================
+
 # DETECTION METRICS
-# =====================================================
+
 def compute_detection_metrics(preds, gts, score_thresh=0.01, iou_thresh=0.3):
 
     tp, fp, fn = 0, 0, 0
@@ -125,9 +125,9 @@ def compute_detection_metrics(preds, gts, score_thresh=0.01, iou_thresh=0.3):
     return precision, recall
 
 
-# =====================================================
+
 # CLASSIFICATION METRICS
-# =====================================================
+
 def compute_classification_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5):
 
     tp, fp, fn = 0, 0, 0
@@ -189,9 +189,9 @@ def compute_classification_metrics(preds, gts, score_thresh=0.3, iou_thresh=0.5)
     return precision, recall, cm
 
 
-# =====================================================
+
 # YOLO
-# =====================================================
+
 def evaluate_yolo(model_path):
     from ultralytics import YOLO
     model = YOLO(model_path)
@@ -202,9 +202,9 @@ def evaluate_yolo(model_path):
         "map": results.box.map
     }
 
-# =====================================================
+
 # RT DETR
-# =====================================================
+
 def evaluate_rtdetr(model_path):
     from ultralytics import YOLO
 
@@ -217,9 +217,9 @@ def evaluate_rtdetr(model_path):
     }
 
 
-# =====================================================
+
 # MAIN
-# =====================================================
+
 def run_full_evaluation():
 
     device = DEVICE
@@ -238,9 +238,8 @@ def run_full_evaluation():
 
     print("\n=== EVALUACIÓN MODELOS ===\n")
 
-    # =====================================================
+    
     # FASTERR-CNN
-    # =====================================================
     """
     from src.models.fasterrcnn import get_model as get_faster
 
@@ -262,9 +261,8 @@ def run_full_evaluation():
     show_predictions(model, dataset, device, num_images=3)
     """
 
-    # =====================================================
+    
     # RETINANET
-    # =====================================================
     """
     from src.models.retinanet import get_model as get_retina
 
@@ -287,9 +285,8 @@ def run_full_evaluation():
     """
 
 
-    # =====================================================
+    
     # YOLO
-    # =====================================================
     """
     yolo_score = evaluate_yolo("yolo26n.pt")
 
@@ -297,9 +294,8 @@ def run_full_evaluation():
     print(f"mAP50: {yolo_score['map50']:.4f}")
     print(f"mAP:   {yolo_score['map']:.4f}")
     """
-    # =====================================================
+    
     # RT DETR
-    # =====================================================
     
     rtdetr_score = evaluate_rtdetr("rtdetr.pt")
 
