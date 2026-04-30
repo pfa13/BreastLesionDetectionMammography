@@ -47,7 +47,7 @@ def convert_coco_to_yolo(coco_json, images_dir, output_dir):
         dst = output_dir / "images" / img_path.name
 
         try:
-            img = Image.open(img_path).convert("RGB")  # 🔥 CLAVE
+            img = Image.open(img_path).convert("RGB")  
             img.save(dst)
         except Exception as e:
             print(f"[ERROR] No se pudo procesar {img_path}: {e}")
@@ -86,7 +86,7 @@ def convert_coco_to_yolo(coco_json, images_dir, output_dir):
 
 
 def main():
-    fold = "fold_0"  # 🔥 cambia aquí si quieres otro
+    fold = "fold_0"  
 
     base_ann = Path(f"data/annotations/{fold}")
 
