@@ -4,7 +4,7 @@ import numpy as np
 
 def validate_coco(path):
 
-    print(f"\n🔍 Validating COCO: {path}\n")
+    print(f"\nValidating COCO: {path}\n")
 
     with open(path, "r") as f:
         data = json.load(f)
@@ -19,35 +19,35 @@ def validate_coco(path):
         img_id = ann["image_id"]
 
         if img_id not in images:
-            print(f"❌ Missing image_id: {img_id}")
+            print(f" Missing image_id: {img_id}")
             errors += 1
             continue
 
         bbox = ann.get("bbox", None)
 
         if bbox is None:
-            print(f"⚠️ Missing bbox in ann {ann['id']}")
+            print(f" Missing bbox in ann {ann['id']}")
             warnings += 1
             continue
 
         x, y, w, h = bbox
 
-        # 🔥 invalid geometry
+        # invalid geometry
         if w <= 0 or h <= 0:
-            print(f"❌ Invalid bbox (neg/zero): {bbox}")
+            print(f" Invalid bbox (neg/zero): {bbox}")
             errors += 1
 
         if np.isnan([x, y, w, h]).any():
-            print(f"❌ NaN in bbox: {bbox}")
+            print(f" NaN in bbox: {bbox}")
             errors += 1
 
         if np.isinf([x, y, w, h]).any():
-            print(f"❌ Inf in bbox: {bbox}")
+            print(f" Inf in bbox: {bbox}")
             errors += 1
 
         # optional sanity check
         if w > 1000 or h > 1000:
-            print(f"⚠️ Suspicious large bbox: {bbox}")
+            print(f" Suspicious large bbox: {bbox}")
             warnings += 1
 
     print("\n=== SUMMARY ===")
@@ -55,9 +55,9 @@ def validate_coco(path):
     print(f"Warnings: {warnings}")
 
     if errors > 0:
-        print("❌ COCO dataset is NOT safe for training")
+        print(" COCO dataset is NOT safe for training")
     else:
-        print("✅ COCO dataset looks OK")
+        print(" COCO dataset looks OK")
 
 
 if __name__ == "__main__":
