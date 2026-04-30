@@ -50,7 +50,7 @@ def validate_coco(path):
             print(f" Suspicious large bbox: {bbox}")
             warnings += 1
 
-    print("\n=== SUMMARY ===")
+    print("\n=== Summary ===")
     print(f"Errors: {errors}")
     print(f"Warnings: {warnings}")
 
