@@ -13,7 +13,7 @@ def get_model(num_classes):
     model.head.classification_head = RetinaNetClassificationHead(
         in_channels=256,
         num_anchors=num_anchors,
-        num_classes=num_classes  # ⚠️ SIN +1 (RetinaNet ya maneja background)
+        num_classes=num_classes  # sin +1 (RetinaNet ya maneja background)
     )
 
     return model
