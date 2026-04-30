@@ -12,9 +12,9 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-# -------------------------
+
 # FASTERCNN
-# -------------------------
+
 def train_fasterrcnn():
 
     train_dataset = CocoDataset(
@@ -70,9 +70,9 @@ def train_fasterrcnn():
     torch.save(model.state_dict(), "faster.pth")
 
 
-# -------------------------
+
 # RETINANET
-# -------------------------
+
 def train_retinanet():
 
     train_dataset = CocoDataset(
@@ -132,9 +132,9 @@ def train_retinanet():
 
     torch.save(model.state_dict(), "retina.pth")
 
-# -------------------------
+
 # RT-DETR
-# -------------------------
+
 def train_rtdetr():
     from ultralytics import YOLO
 
@@ -150,9 +150,9 @@ def train_rtdetr():
     model.save("rtdetr.pt")
 
 
-# -------------------------
+
 # MAIN
-# -------------------------
+
 def main(model_name):
 
     if model_name == "yolo":
